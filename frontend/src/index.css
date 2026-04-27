@@ -523,24 +523,36 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 /* ── Promo Banners (Dashboard) ─────────────────────────────────────── */
 .promo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
 .promo-banner {
-  display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem;
-  border-radius: 16px; text-decoration: none; color: white;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.5rem 1.75rem;
+  border-radius: 14px; text-decoration: none;
   transition: transform .15s ease, box-shadow .15s ease;
+  border: 1.5px solid var(--border);
 }
-.promo-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
-.promo-buy { background: linear-gradient(135deg, #2d6a4f, #1b4332); }
-.promo-redeem { background: linear-gradient(135deg, #4a6741, #2d6a4f); }
-.promo-icon { font-size: 2rem; flex-shrink: 0; }
+.promo-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.promo-buy {
+  background: var(--surface);
+  border-left: 4px solid #2d6a4f;
+}
+.promo-redeem {
+  background: var(--surface);
+  border-left: 4px solid #4a6741;
+}
 .promo-text { flex: 1; }
-.promo-text h3 { font-size: 1rem; font-weight: 600; margin: 0; }
-.promo-text p { font-size: 0.85rem; margin: 0.25rem 0 0; opacity: 0.9; }
+.promo-text h3 { font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--text); }
+.promo-text p { font-size: 0.85rem; margin: 0.3rem 0 0; color: var(--text-muted); }
+.promo-text p strong { color: var(--text); }
 .promo-cta {
   font-size: 0.85rem; font-weight: 600; white-space: nowrap;
-  background: rgba(255,255,255,.2); padding: 0.4rem 0.8rem; border-radius: 8px;
+  background: #2d6a4f; color: #fff;
+  padding: 0.5rem 1.1rem; border-radius: 8px;
+  letter-spacing: 0.02em;
 }
+.promo-banner:hover .promo-cta { background: #1b4332; }
 @media (max-width: 700px) {
   .promo-row { grid-template-columns: 1fr; }
 }
+
 
 /* ── Wallet Page ──────────────────────────────────────────────────── */
 .wallet-balance-card {

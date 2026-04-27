@@ -51,17 +51,17 @@ export default function Dashboard() {
       {/* ── Stats ───────────────────────────────────────────────────────── */}
       <div className="stats-row">
         <div className="stat-card" style={{ animationDelay: '.05s' }}>
-          <div className="stat-label">📍 Based in</div>
+          <div className="stat-label">Based in</div>
           <div className="stat-value" style={{ fontSize: '1.1rem', marginTop: '.2rem' }}>
             {profile?.city || '—'}
           </div>
         </div>
         <div className="stat-card" style={{ animationDelay: '.1s' }}>
-          <div className="stat-label">⏳ Awaiting confirm</div>
+          <div className="stat-label">Awaiting confirm</div>
           <div className="stat-value">{pending}</div>
         </div>
         <div className="stat-card" style={{ animationDelay: '.15s' }}>
-          <div className="stat-label">✅ Upcoming sessions</div>
+          <div className="stat-label">Upcoming sessions</div>
           <div className="stat-value">{upcoming}</div>
         </div>
       </div>
@@ -69,21 +69,19 @@ export default function Dashboard() {
       {/* ── Promo Banners ────────────────────────────────────────────────── */}
       <div className="promo-row">
         <Link to="/wallet" className="promo-banner promo-buy">
-          <div className="promo-icon">💰</div>
           <div className="promo-text">
             <h3>Need more credits?</h3>
-            <p>Get 5 credits for just <strong>$80</strong> — save $20!</p>
+            <p>Get 5 credits for just <strong>$80</strong> — save $20</p>
           </div>
-          <span className="promo-cta">Buy Now →</span>
+          <span className="promo-cta">Buy Now</span>
         </Link>
 
         <Link to="/wallet?tab=redeem" className="promo-banner promo-redeem">
-          <div className="promo-icon">🎯</div>
           <div className="promo-text">
             <h3>Cash out your skills</h3>
-            <p>Redeem <strong>5 credits for $50</strong> — start earning today</p>
+            <p>Redeem <strong>5 credits for $50</strong> — start earning</p>
           </div>
-          <span className="promo-cta">Redeem →</span>
+          <span className="promo-cta">Redeem</span>
         </Link>
       </div>
 
