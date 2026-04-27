@@ -5,7 +5,6 @@ import com.skillbank.session.Session;
 import com.skillbank.session.SessionRepository;
 import com.skillbank.session.SessionStatus;
 import com.skillbank.user.User;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,6 +107,27 @@ public class EscrowService {
                 .session(null)
                 .hours(hours.setScale(2, RoundingMode.HALF_UP))
                 .type(TransactionType.PURCHASE)
+                .build());
+    }
+
+    @Transactional
+    public void deductCredits(User user, BigDecimal hours) {
+        if (hours.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Deduction amount must be positive");
+        }
+
+        BigDecimal currentBalance = getBalance(user.getId());
+        if (currentBalance.compareTo(hours) < 0) {
+            throw new InsufficientBalanceException(
+                "Insufficient credits. User has " + currentBalance + " but tried to deduct " + hours);
+        }
+
+        transactionRepo.save(TimeTransaction.builder()
+                .fromUser(user)
+                .toUser(null)
+                .session(null)
+                .hours(hours.setScale(2, RoundingMode.HALF_UP))
+                .type(TransactionType.REDEMPTION)
                 .build());
     }
 

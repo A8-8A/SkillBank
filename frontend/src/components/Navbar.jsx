@@ -19,6 +19,7 @@ export default function Navbar() {
           <NavLink to="/skills">Skills</NavLink>
           <NavLink to="/sessions">Sessions</NavLink>
           <NavLink to="/matches">Matches</NavLink>
+          <NavLink to="/wallet">Wallet</NavLink>
           <NavLink to="/profile">My Profile</NavLink>
           {user?.role === 'ADMIN' && (
             <NavLink to="/admin/disputes">Disputes</NavLink>

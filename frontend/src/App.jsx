@@ -12,6 +12,7 @@ import Skills from './pages/Skills'
 import Sessions from './pages/Sessions'
 import Matches from './pages/Matches'
 import Profile from './pages/Profile'
+import Wallet from './pages/Wallet'
 import AdminDisputes from './pages/AdminDisputes'
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="skills" element={<Skills />} />
             <Route path="sessions" element={<Sessions />} />
             <Route path="matches" element={<Matches />} />
+            <Route path="wallet" element={<Wallet />} />
             <Route path="profile" element={<Profile />} />
             <Route path="user/:userId" element={<Profile />} />
             <Route path="admin/disputes" element={<AdminDisputes />} />

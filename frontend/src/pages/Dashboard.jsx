@@ -66,6 +66,27 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── Promo Banners ────────────────────────────────────────────────── */}
+      <div className="promo-row">
+        <Link to="/wallet" className="promo-banner promo-buy">
+          <div className="promo-icon">💰</div>
+          <div className="promo-text">
+            <h3>Need more credits?</h3>
+            <p>Get 5 credits for just <strong>$80</strong> — save $20!</p>
+          </div>
+          <span className="promo-cta">Buy Now →</span>
+        </Link>
+
+        <Link to="/wallet?tab=redeem" className="promo-banner promo-redeem">
+          <div className="promo-icon">🎯</div>
+          <div className="promo-text">
+            <h3>Cash out your skills</h3>
+            <p>Redeem <strong>5 credits for $50</strong> — start earning today</p>
+          </div>
+          <span className="promo-cta">Redeem →</span>
+        </Link>
+      </div>
+
       {/* ── Quick Actions ────────────────────────────────────────────────── */}
       <div>
         <div className="section-header" style={{ marginBottom: '1rem' }}>

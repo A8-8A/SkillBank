@@ -520,3 +520,111 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .legend-dot.slot-available { background: linear-gradient(135deg, #b8d48e, #94bb66); }
 .legend-dot.slot-booked { background: linear-gradient(135deg, #e57373, #c62828); }
 .legend-dot.slot-empty { background: var(--surface-2); }
+/* ── Promo Banners (Dashboard) ─────────────────────────────────────── */
+.promo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+.promo-banner {
+  display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem;
+  border-radius: 16px; text-decoration: none; color: white;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.promo-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+.promo-buy { background: linear-gradient(135deg, #2d6a4f, #1b4332); }
+.promo-redeem { background: linear-gradient(135deg, #4a6741, #2d6a4f); }
+.promo-icon { font-size: 2rem; flex-shrink: 0; }
+.promo-text { flex: 1; }
+.promo-text h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+.promo-text p { font-size: 0.85rem; margin: 0.25rem 0 0; opacity: 0.9; }
+.promo-cta {
+  font-size: 0.85rem; font-weight: 600; white-space: nowrap;
+  background: rgba(255,255,255,.2); padding: 0.4rem 0.8rem; border-radius: 8px;
+}
+@media (max-width: 700px) {
+  .promo-row { grid-template-columns: 1fr; }
+}
+
+/* ── Wallet Page ──────────────────────────────────────────────────── */
+.wallet-balance-card {
+  background: linear-gradient(135deg, #2d6a4f, #1b4332);
+  border-radius: 20px; padding: 2.5rem; color: white; text-align: center;
+  margin-bottom: 1.5rem;
+}
+.wallet-balance-label { font-size: 0.9rem; opacity: 0.8; margin: 0; }
+.wallet-balance-number { font-size: 3.5rem; font-weight: 700; margin: 0.25rem 0; }
+.wallet-tabs {
+  display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+  background: var(--surface-2); border-radius: 12px; padding: 4px;
+}
+.wallet-tab {
+  flex: 1; padding: 0.75rem; border: none; border-radius: 10px;
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  background: transparent; color: var(--text-muted);
+  transition: all .15s ease;
+}
+.wallet-tab-active {
+  background: var(--color-primary, #2d6a4f); color: white;
+  box-shadow: 0 2px 8px rgba(45,106,79,.3);
+}
+
+/* ── Buy Packages ─────────────────────────────────────────────────── */
+.wallet-packages { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.wallet-package-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; padding: 2rem; text-align: center;
+  cursor: pointer; transition: all .15s ease; position: relative;
+}
+.wallet-package-card:hover { border-color: var(--color-primary, #2d6a4f); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+.wallet-package-featured {
+  border-color: var(--color-primary, #2d6a4f);
+  background: linear-gradient(180deg, rgba(45,106,79,.04), var(--surface));
+}
+.package-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--color-primary, #2d6a4f); color: white;
+  font-size: 0.75rem; font-weight: 700; padding: 0.3rem 1rem;
+  border-radius: 20px; white-space: nowrap;
+}
+.package-credits { font-size: 3rem; font-weight: 700; color: var(--color-primary, #2d6a4f); }
+.package-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+.package-price { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.package-save { font-size: 0.85rem; color: var(--color-primary, #2d6a4f); font-weight: 600; margin-bottom: 1rem; }
+@media (max-width: 500px) {
+  .wallet-packages { grid-template-columns: 1fr; }
+}
+
+/* ── Redeem Section ───────────────────────────────────────────────── */
+.wallet-redeem-section { display: flex; flex-direction: column; gap: 1.25rem; }
+.wallet-redeem-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; padding: 2rem; text-align: center;
+}
+.wallet-redeem-description { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; max-width: 500px; margin: 0.5rem auto; }
+.wallet-redeem-rate {
+  display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+  margin: 1.5rem 0; padding: 1.25rem; background: var(--surface-2); border-radius: 12px;
+}
+.redeem-from, .redeem-to { text-align: center; }
+.redeem-amount { display: block; font-size: 2rem; font-weight: 700; color: var(--color-primary, #2d6a4f); }
+.redeem-label { font-size: 0.85rem; color: var(--text-muted); }
+.redeem-arrow { font-size: 1.5rem; color: var(--text-muted); }
+.wallet-redeem-balance { font-size: 0.9rem; color: var(--text-muted); }
+
+/* ── Info Card / Steps ────────────────────────────────────────────── */
+.wallet-info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem;
+}
+.wallet-info-card h3 { font-size: 1rem; margin-bottom: 1rem; }
+.wallet-steps { display: flex; flex-direction: column; gap: 0.75rem; }
+.wallet-step { display: flex; align-items: flex-start; gap: 0.75rem; }
+.step-number {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--color-primary, #2d6a4f); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+}
+.wallet-step p { margin: 0; font-size: 0.9rem; color: var(--text-muted); padding-top: 3px; }
+
+/* ── Danger Button ────────────────────────────────────────────────── */
+.btn-danger { background: #c0392b; color: white; }
+.btn-danger:hover { background: #a93226; }
+

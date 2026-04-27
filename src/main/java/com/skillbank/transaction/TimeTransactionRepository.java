@@ -21,7 +21,7 @@ public interface TimeTransactionRepository extends JpaRepository<TimeTransaction
     @Query("""
         SELECT COALESCE(SUM(t.hours), 0) FROM TimeTransaction t
         WHERE t.fromUser.id = :userId
-          AND t.type = 'ESCROW_HOLD'
+          AND t.type IN ('ESCROW_HOLD', 'REDEMPTION')
         """)
     BigDecimal sumDebitsForUser(@Param("userId") Long userId);
 
