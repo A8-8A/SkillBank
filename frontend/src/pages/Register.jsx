@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { Link } from 'react-router-dom'
+import client from '../api/client'
 
 export default function Register() {
-  const { register } = useAuth()
-  const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '', city: '', bio: '', phoneNumber: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [registered, setRegistered] = useState(false)
 
   const set = field => e => setForm({ ...form, [field]: e.target.value })
 
@@ -16,13 +15,47 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      await register(form)
-      navigate('/dashboard')
+      await client.post('/auth/register', form)
+      setRegistered(true)
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed')
+      setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (registered) {
+    return (
+      <div className="auth-page">
+        <div className="auth-panel-image">
+          <img
+            src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80"
+            alt="Community learning together"
+          />
+          <div className="auth-panel-overlay">
+            <div className="auth-panel-brand">SkillBank ✦</div>
+            <div className="auth-panel-tagline">
+              <h2>Your skills<br />have value.</h2>
+              <p>Join a community that trades knowledge — no money, just time.</p>
+            </div>
+          </div>
+        </div>
+        <div className="auth-panel-form">
+          <div className="auth-form-inner" style={{ textAlign: 'center' }}>
+            <h1>Check your email ✉️</h1>
+            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', marginTop: '1rem' }}>
+              We've sent a verification link to <strong>{form.email}</strong>.
+            </p>
+            <p style={{ marginTop: '0.5rem', color: '#666' }}>
+              Click the link in the email to activate your account, then come back here to sign in.
+            </p>
+            <Link to="/login" className="btn btn-primary" style={{ marginTop: '2rem', display: 'inline-block' }}>
+              Go to Sign In
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import client from '../api/client'
 
 export default function Login() {
   const { login } = useAuth()
@@ -8,18 +9,39 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsVerification, setNeedsVerification] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setNeedsVerification(false)
     setLoading(true)
     try {
       await login(form.email, form.password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid email or password')
+      const msg = err.response?.data?.error || err.response?.data?.message || ''
+      if (msg === 'EMAIL_NOT_VERIFIED') {
+        setNeedsVerification(true)
+      } else {
+        setError('Invalid email or password')
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    try {
+      await client.post('/auth/resend-verification', { email: form.email })
+      setResent(true)
+    } catch {
+      setError('Failed to resend verification email')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -46,6 +68,32 @@ export default function Login() {
 
           {error && <div className="alert alert-error">{error}</div>}
 
+          {needsVerification && (
+            <div className="alert alert-error" style={{ textAlign: 'center' }}>
+              <p><strong>Email not verified.</strong></p>
+              <p style={{ marginTop: '0.5rem' }}>Check your inbox for the verification link.</p>
+              {resent ? (
+                <p style={{ marginTop: '0.5rem', color: '#2d6a4f' }}>✓ Verification email resent!</p>
+              ) : (
+                <button
+                  onClick={handleResend}
+                  disabled={resending}
+                  style={{
+                    marginTop: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    color: '#2d6a4f',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  {resending ? 'Sending…' : 'Resend verification email'}
+                </button>
+              )}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Email address</label>
@@ -67,8 +115,12 @@ export default function Login() {
                 required
               />
             </div>
-            <button className="btn btn-primary btn-full" type="submit" disabled={loading}
-              style={{ marginTop: '.5rem' }}>
+            <div style={{ textAlign: 'right', marginTop: '-0.25rem', marginBottom: '0.5rem' }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: '#2d6a4f' }}>
+                Forgot password?
+              </Link>
+            </div>
+            <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
