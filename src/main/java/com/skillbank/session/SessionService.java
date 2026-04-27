@@ -40,6 +40,22 @@ public class SessionService {
         Skill skill = skillRepo.findById(request.getSkillId())
                 .orElseThrow(() -> new EntityNotFoundException("Skill not found"));
 
+        // Check if this time slot already has an active session for this teacher
+        List<Session> activeSessions = sessionRepo.findActiveSessionsByTeacherId(
+                teacher.getId(), LocalDateTime.now());
+
+        for (Session existing : activeSessions) {
+            LocalDateTime existingStart = existing.getScheduledAt();
+            LocalDateTime existingEnd = existing.getEndTime();
+            LocalDateTime requestedStart = request.getScheduledAt();
+            LocalDateTime requestedEnd = requestedStart.plusMinutes(request.getDurationMinutes());
+
+            // Check for time overlap
+            if (requestedStart.isBefore(existingEnd) && requestedEnd.isAfter(existingStart)) {
+                throw new IllegalStateException("This time slot is already booked. Please choose a different time.");
+            }
+        }
+
         Session session = Session.builder()
                 .learner(learner)
                 .teacher(teacher)

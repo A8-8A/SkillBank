@@ -31,13 +31,23 @@ function toLocalDateTimeInput(date) {
 }
 
 export default function AvailabilityGrid({ slots, isOwner, onToggle, onSlotClick }) {
-  const isAvailable = (day, hour) =>
-    slots.some(s => s.dayOfWeek === day && s.hour === hour)
+  const getSlot = (day, hour) =>
+    slots.find(s => s.dayOfWeek === day && s.hour === hour)
+
+  const isAvailable = (day, hour) => !!getSlot(day, hour)
+
+  const isBooked = (day, hour) => {
+    const slot = getSlot(day, hour)
+    return slot?.booked === true
+  }
 
   const handleClick = (day, hour) => {
+    const booked = isBooked(day, hour)
+
     if (isOwner) {
+      if (booked) return // Can't remove booked slots
       onToggle(day, hour)
-    } else if (isAvailable(day, hour)) {
+    } else if (isAvailable(day, hour) && !booked) {
       const date = nextOccurrence(day, hour)
       if (!date) return
       onSlotClick({ dayOfWeek: day, hour, suggestedDate: toLocalDateTimeInput(date) })
@@ -59,12 +69,27 @@ export default function AvailabilityGrid({ slots, isOwner, onToggle, onSlotClick
               <td className="hour-label">{formatHour(hour)}</td>
               {DAYS.map(day => {
                 const avail = isAvailable(day, hour)
+                const booked = isBooked(day, hour)
                 return (
                   <td
                     key={day}
-                    className={`slot-cell ${avail ? 'slot-available' : 'slot-empty'} ${isOwner ? 'slot-owner' : avail ? 'slot-bookable' : ''}`}
+                    className={`slot-cell ${
+                      booked ? 'slot-booked' :
+                      avail ? 'slot-available' :
+                      'slot-empty'
+                    } ${
+                      isOwner
+                        ? (booked ? 'slot-locked' : 'slot-owner')
+                        : (avail && !booked ? 'slot-bookable' : '')
+                    }`}
                     onClick={() => handleClick(day, hour)}
-                    title={avail ? (isOwner ? 'Click to remove' : `Book ${day} ${formatHour(hour)}`) : (isOwner ? 'Click to add' : '')}
+                    title={
+                      booked
+                        ? (isOwner ? 'Booked — cannot remove until session is cancelled or rejected' : 'Already booked')
+                        : avail
+                          ? (isOwner ? 'Click to remove' : `Book ${day} ${formatHour(hour)}`)
+                          : (isOwner ? 'Click to add' : '')
+                    }
                   />
                 )
               })}
@@ -72,8 +97,13 @@ export default function AvailabilityGrid({ slots, isOwner, onToggle, onSlotClick
           ))}
         </tbody>
       </table>
+      <div className="availability-legend">
+        <span className="legend-item"><span className="legend-dot slot-available"></span> Available</span>
+        <span className="legend-item"><span className="legend-dot slot-booked"></span> Booked</span>
+        <span className="legend-item"><span className="legend-dot slot-empty"></span> Not set</span>
+      </div>
       {isOwner && (
-        <p className="availability-hint">Click a cell to mark/unmark your availability. Each slot = 1 hour.</p>
+        <p className="availability-hint">Click a cell to mark/unmark your availability. Each slot = 1 hour. Booked slots (red) cannot be removed.</p>
       )}
     </div>
   )

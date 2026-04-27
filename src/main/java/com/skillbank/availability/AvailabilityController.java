@@ -28,7 +28,11 @@ public class AvailabilityController {
             @RequestBody Map<String, String> body) {
         DayOfWeek day = DayOfWeek.valueOf(body.get("dayOfWeek").toUpperCase());
         int hour = Integer.parseInt(body.get("hour"));
-        boolean available = availabilityService.toggleSlot(currentUser, day, hour);
-        return ResponseEntity.ok(Map.of("available", available, "dayOfWeek", day.name(), "hour", hour));
+        try {
+            boolean available = availabilityService.toggleSlot(currentUser, day, hour);
+            return ResponseEntity.ok(Map.of("available", available, "dayOfWeek", day.name(), "hour", hour));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

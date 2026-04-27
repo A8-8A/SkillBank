@@ -34,4 +34,14 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
         ORDER BY s.scheduledAt DESC
         """)
     List<Session> findAllByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT s FROM Session s
+        WHERE s.teacher.id = :teacherId
+          AND s.status IN ('PENDING', 'CONFIRMED')
+          AND s.scheduledAt > :now
+        """)
+    List<Session> findActiveSessionsByTeacherId(
+            @Param("teacherId") Long teacherId,
+            @Param("now") LocalDateTime now);
 }
