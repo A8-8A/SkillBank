@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-const client = axios.create({ baseURL: '/api' })
+const client = axios.create({
+  baseURL: import.meta.env.PROD
+    ? 'https://skillbank-api.onrender.com/api'
+    : '/api'
+})
 
 client.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
