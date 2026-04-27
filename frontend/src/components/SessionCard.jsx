@@ -1,0 +1,87 @@
+import { useAuth } from '../context/AuthContext'
+import client from '../api/client'
+
+const STATUS_LABELS = {
+  PENDING: 'Pending',
+  CONFIRMED: 'Confirmed',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  DISPUTED: 'Disputed',
+  REFUNDED: 'Refunded',
+}
+
+export default function SessionCard({ session, onRefresh }) {
+  const { user } = useAuth()
+  const isTeacher = session.teacher?.id === user?.userId
+  const isLearner = session.learner?.id === user?.userId
+
+  const scheduledAt = new Date(session.scheduledAt)
+  const endTime = new Date(scheduledAt.getTime() + session.durationMinutes * 60000)
+  const now = new Date()
+  const duringSession = now >= scheduledAt && now <= endTime
+
+  const confirm = async () => {
+    await client.post(`/sessions/${session.id}/confirm`)
+    onRefresh()
+  }
+
+  const cancel = async () => {
+    await client.post(`/sessions/${session.id}/cancel`)
+    onRefresh()
+  }
+
+  const fileDispute = async () => {
+    const reason = window.prompt('Describe the issue (e.g. teacher did not show up):')
+    if (!reason) return
+    await client.post('/disputes', { sessionId: session.id, reason })
+    onRefresh()
+  }
+
+  return (
+    <div className="card session-card">
+      <div className="session-header">
+        <span className={`badge badge-${session.status.toLowerCase()}`}>
+          {STATUS_LABELS[session.status]}
+        </span>
+        <span className="session-skill">{session.skill?.name}</span>
+      </div>
+      <div className="session-body">
+        <div className="session-row">
+          <span className="label">Teacher</span>
+          <span>{session.teacher?.name}</span>
+        </div>
+        <div className="session-row">
+          <span className="label">Learner</span>
+          <span>{session.learner?.name}</span>
+        </div>
+        <div className="session-row">
+          <span className="label">When</span>
+          <span>{scheduledAt.toLocaleString()}</span>
+        </div>
+        <div className="session-row">
+          <span className="label">Duration</span>
+          <span>{session.durationMinutes} min</span>
+        </div>
+        {session.notes && (
+          <div className="session-row">
+            <span className="label">Notes</span>
+            <span>{session.notes}</span>
+          </div>
+        )}
+      </div>
+      <div className="session-actions">
+        {isTeacher && session.status === 'PENDING' && (
+          <>
+            <button className="btn btn-success" onClick={confirm}>Confirm</button>
+            <button className="btn btn-danger" onClick={cancel}>Reject</button>
+          </>
+        )}
+        {isLearner && session.status === 'CONFIRMED' && duringSession && (
+          <button className="btn btn-warning" onClick={fileDispute}>
+            Report No-Show
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,93 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+export default function Register() {
+  const { register } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ name: '', email: '', password: '', city: '', bio: '', phoneNumber: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const set = field => e => setForm({ ...form, [field]: e.target.value })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await register(form)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.response?.data?.error || 'Registration failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-panel-image">
+        <img
+          src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80"
+          alt="Community learning together"
+        />
+        <div className="auth-panel-overlay">
+          <div className="auth-panel-brand">SkillBank ✦</div>
+          <div className="auth-panel-tagline">
+            <h2>Your skills<br />have value.</h2>
+            <p>Join a community that trades knowledge — no money, just time.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="auth-panel-form">
+        <div className="auth-form-inner">
+          <h1>Create account</h1>
+          <p className="auth-subtitle">You'll start with 3 free credits</p>
+
+          {error && <div className="alert alert-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Full Name</label>
+              <input type="text" value={form.name} onChange={set('name')} placeholder="Ada Lovelace" required />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" required />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <input type="password" value={form.password} onChange={set('password')} placeholder="Min. 8 characters" required minLength={8} />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>City</label>
+                <input type="text" value={form.city} onChange={set('city')} placeholder="Beirut" />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} placeholder="+961 ..." />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Bio</label>
+              <textarea value={form.bio} onChange={set('bio')} rows={2} placeholder="Tell others what you're passionate about…" />
+            </div>
+            <button className="btn btn-primary btn-full" type="submit" disabled={loading}
+              style={{ marginTop: '.25rem' }}>
+              {loading ? 'Creating account…' : 'Get Started →'}
+            </button>
+          </form>
+
+          <p className="auth-footer">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
