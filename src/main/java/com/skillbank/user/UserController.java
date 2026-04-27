@@ -35,7 +35,8 @@ public class UserController {
                 updates.get("bio"),
                 updates.get("city"),
                 updates.get("name"),
-                updates.get("phoneNumber")
+                updates.get("phoneNumber"),
+                updates.get("profilePicUrl")
         ));
     }
 

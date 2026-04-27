@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
+import { storage } from '../firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import AvailabilityGrid from '../components/AvailabilityGrid'
 
 export default function Profile() {
   const { userId } = useParams()
   const { user: currentUser } = useAuth()
   const navigate = useNavigate()
+  const fileInputRef = useRef(null)
 
   const isOwn = !userId || String(userId) === String(currentUser?.userId)
   const targetId = isOwn ? currentUser?.userId : userId
@@ -23,6 +26,7 @@ export default function Profile() {
   const [bookForm, setBookForm]   = useState({ skillId: '', scheduledAt: '', notes: '' })
   const [bookError, setBookError] = useState('')
   const [bookSuccess, setBookSuccess] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const load = () => {
     if (!targetId) return
@@ -44,6 +48,37 @@ export default function Profile() {
   }
 
   useEffect(() => { load() }, [targetId])
+
+  const handlePfpUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      alert('Image must be under 5 MB')
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const fileRef = ref(storage, `profile-pictures/${currentUser.userId}_${Date.now()}`)
+      await uploadBytes(fileRef, file)
+      const url = await getDownloadURL(fileRef)
+
+      await client.patch('/users/me', { profilePicUrl: url })
+      setProfile(prev => ({ ...prev, profilePicUrl: url }))
+    } catch (err) {
+      console.error('Upload failed:', err)
+      alert('Failed to upload image. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleToggle = async (dayOfWeek, hour) => {
     const { data } = await client.post('/availability/toggle', { dayOfWeek, hour: String(hour) })
@@ -104,15 +139,51 @@ export default function Profile() {
           style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=80')" }}
         />
         <div className="profile-body">
-          {/* Avatar row — overlaps cover via negative margin */}
           <div className="profile-avatar-row">
-            <div className="profile-avatar">{profile.name?.[0]?.toUpperCase()}</div>
+            <div
+              className="profile-avatar"
+              onClick={() => isOwn && fileInputRef.current?.click()}
+              style={{
+                cursor: isOwn ? 'pointer' : 'default',
+                backgroundImage: profile.profilePicUrl ? `url(${profile.profilePicUrl})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                position: 'relative'
+              }}
+            >
+              {!profile.profilePicUrl && profile.name?.[0]?.toUpperCase()}
+              {isOwn && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  background: 'var(--color-primary, #2d6a4f)',
+                  borderRadius: '50%',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  color: 'white',
+                  border: '2px solid white'
+                }}>
+                  {uploading ? '...' : '📷'}
+                </div>
+              )}
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handlePfpUpload}
+            />
             {isOwn && !editing && (
               <button className="btn btn-sm" onClick={() => setEditing(true)}>Edit Profile</button>
             )}
           </div>
 
-          {/* Info row — always in beige area, never over photo */}
           <div className="profile-info">
             {editing ? (
               <form onSubmit={saveProfile} className="edit-profile-form">

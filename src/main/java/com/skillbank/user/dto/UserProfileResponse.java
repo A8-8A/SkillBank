@@ -15,6 +15,7 @@ public class UserProfileResponse {
     private String bio;
     private String city;
     private String phoneNumber;
+    private String profilePicUrl;
     private String role;
     private BigDecimal balance;
     private LocalDateTime createdAt;

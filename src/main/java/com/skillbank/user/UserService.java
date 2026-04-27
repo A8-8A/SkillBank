@@ -30,11 +30,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserProfileResponse updateProfile(User currentUser, String bio, String city, String name, String phoneNumber) {
+    public UserProfileResponse updateProfile(User currentUser, String bio, String city, String name, String phoneNumber, String profilePicUrl) {
         if (name != null && !name.isBlank()) currentUser.setName(name);
         if (bio != null) currentUser.setBio(bio);
         if (city != null) currentUser.setCity(city);
         if (phoneNumber != null) currentUser.setPhoneNumber(phoneNumber);
+        if (profilePicUrl != null) currentUser.setProfilePicUrl(profilePicUrl);
         userRepository.save(currentUser);
         BigDecimal balance = escrowService.getBalance(currentUser.getId());
         return toResponse(currentUser, balance);
@@ -54,6 +55,7 @@ public class UserService {
         return new UserProfileResponse(
                 user.getId(), user.getName(), user.getEmail(),
                 user.getBio(), user.getCity(), user.getPhoneNumber(),
+                user.getProfilePicUrl(),
                 user.getRole().name(), balance, user.getCreatedAt()
         );
     }
