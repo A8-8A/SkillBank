@@ -33,6 +33,20 @@ public class User implements UserDetails {
     private String bio;
     private String city;
     private String phoneNumber;
+    private String profilePicUrl;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
+    @JsonIgnore
+    private String verificationToken;
+
+    @JsonIgnore
+    private String resetToken;
+
+    @JsonIgnore
+    private LocalDateTime resetTokenExpiry;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

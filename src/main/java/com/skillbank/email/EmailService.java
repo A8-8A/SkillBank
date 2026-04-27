@@ -3,6 +3,7 @@ package com.skillbank.email;
 import com.skillbank.session.Session;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -17,8 +18,49 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${app.url:http://localhost:5173}")
+    private String appUrl;
+
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("EEEE, MMM d yyyy 'at' h:mm a");
+
+    @Async
+    public void sendVerificationEmail(String to, String name, String token) {
+        send(
+            to,
+            "Verify your SkillBank email",
+            """
+            Hi %s,
+
+            Welcome to SkillBank! Please verify your email by clicking the link below:
+
+            %s/verify?token=%s
+
+            This link will remain valid until used.
+
+            — SkillBank
+            """.formatted(name, appUrl, token)
+        );
+    }
+
+    @Async
+    public void sendPasswordResetEmail(String to, String name, String token) {
+        send(
+            to,
+            "Reset your SkillBank password",
+            """
+            Hi %s,
+
+            We received a request to reset your password. Click the link below to set a new one:
+
+            %s/reset-password?token=%s
+
+            This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
+
+            — SkillBank
+            """.formatted(name, appUrl, token)
+        );
+    }
 
     @Async
     public void notifyTeacherOfNewBooking(Session session) {
