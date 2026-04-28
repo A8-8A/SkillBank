@@ -3,6 +3,7 @@ package com.skillbank.scheduler;
 import com.skillbank.email.EmailService;
 import com.skillbank.session.Session;
 import com.skillbank.session.SessionRepository;
+import com.skillbank.session.SessionStatus;
 import com.skillbank.transaction.EscrowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class SessionScheduler {
 
         for (Session session : expiring) {
             try {
-                session.setStatus(com.skillbank.session.SessionStatus.CANCELLED);
+                session.setStatus(SessionStatus.CANCELLED);
                 sessionRepo.save(session);
                 escrowService.refundToLearner(session);
                 emailService.notifyBothAutoCancelled(session);
@@ -58,6 +59,27 @@ public class SessionScheduler {
                 escrowService.releaseToTeacher(session);
             } catch (Exception e) {
                 log.error("Failed to release session {}: {}", session.getId(), e.getMessage());
+            }
+        }
+    }
+
+    @Scheduled(fixedDelay = 60_000)
+    public void sendSessionReminders() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime twoHoursFromNow = now.plusHours(2);
+        List<Session> needReminder = sessionRepo.findSessionsNeedingReminder(now, twoHoursFromNow);
+
+        if (!needReminder.isEmpty()) {
+            log.info("Sending reminders for {} upcoming sessions", needReminder.size());
+        }
+
+        for (Session session : needReminder) {
+            try {
+                emailService.sendSessionReminder(session);
+                session.setReminderSent(true);
+                sessionRepo.save(session);
+            } catch (Exception e) {
+                log.error("Failed to send reminder for session {}: {}", session.getId(), e.getMessage());
             }
         }
     }

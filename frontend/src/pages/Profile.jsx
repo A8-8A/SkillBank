@@ -1,3 +1,4 @@
+import ProfileStats from '../components/ProfileStats'
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -232,6 +233,7 @@ export default function Profile() {
         </div>
       </div>
 
+      <ProfileStats profile={profile} />
       <div className="skills-columns">
         <div className="card">
           <h3 className="skills-section-title">Teaches ({offers.length})</h3>

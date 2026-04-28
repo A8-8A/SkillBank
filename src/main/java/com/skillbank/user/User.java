@@ -48,6 +48,11 @@ public class User implements UserDetails {
     @JsonIgnore
     private LocalDateTime resetTokenExpiry;
 
+    @Column(unique = true)
+    private String referralCode;
+
+    private Long referredBy;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

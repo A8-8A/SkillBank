@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const isAdmin = user?.role === 'ADMIN'
 
   const handleLogout = () => {
     logout()
@@ -15,18 +16,27 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-brand">SkillBank</div>
         <div className="navbar-links">
-          <NavLink to="/dashboard">Dashboard</NavLink>
-          <NavLink to="/skills">Skills</NavLink>
-          <NavLink to="/sessions">Sessions</NavLink>
-          <NavLink to="/matches">Matches</NavLink>
-          <NavLink to="/wallet">Wallet</NavLink>
-          <NavLink to="/profile">My Profile</NavLink>
-          {user?.role === 'ADMIN' && (
-            <NavLink to="/admin/disputes">Disputes</NavLink>
+          {isAdmin ? (
+            <>
+              <NavLink to="/dashboard">Overview</NavLink>
+              <NavLink to="/admin/users">Users</NavLink>
+              <NavLink to="/admin/sessions">Sessions</NavLink>
+              <NavLink to="/admin/credits">Credits</NavLink>
+              <NavLink to="/admin/disputes">Disputes</NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/dashboard">Dashboard</NavLink>
+              <NavLink to="/skills">Skills</NavLink>
+              <NavLink to="/sessions">Sessions</NavLink>
+              <NavLink to="/matches">Matches</NavLink>
+              <NavLink to="/wallet">Wallet</NavLink>
+              <NavLink to="/profile">My Profile</NavLink>
+            </>
           )}
         </div>
         <div className="navbar-user">
-          <span>{user?.name}</span>
+          <span>{user?.name}{isAdmin ? ' (Admin)' : ''}</span>
           <button className="btn btn-sm" onClick={handleLogout}>Logout</button>
         </div>
       </nav>

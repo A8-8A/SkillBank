@@ -1,9 +1,13 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import client from '../api/client'
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', city: '', bio: '', phoneNumber: '' })
+  const [searchParams] = useSearchParams()
+  const [form, setForm] = useState({
+    name: '', email: '', password: '', city: '', bio: '', phoneNumber: '',
+    referralCode: searchParams.get('ref') || ''
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [registered, setRegistered] = useState(false)
@@ -28,10 +32,7 @@ export default function Register() {
     return (
       <div className="auth-page">
         <div className="auth-panel-image">
-          <img
-            src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80"
-            alt="Community learning together"
-          />
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Community learning together" />
           <div className="auth-panel-overlay">
             <div className="auth-panel-brand">SkillBank ✦</div>
             <div className="auth-panel-tagline">
@@ -42,7 +43,7 @@ export default function Register() {
         </div>
         <div className="auth-panel-form">
           <div className="auth-form-inner" style={{ textAlign: 'center' }}>
-            <h1>Check your email ✉️</h1>
+            <h1>Check your email</h1>
             <p style={{ fontSize: '1.1rem', lineHeight: '1.6', marginTop: '1rem' }}>
               We've sent a verification link to <strong>{form.email}</strong>.
             </p>
@@ -61,10 +62,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-panel-image">
-        <img
-          src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80"
-          alt="Community learning together"
-        />
+        <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Community learning together" />
         <div className="auth-panel-overlay">
           <div className="auth-panel-brand">SkillBank ✦</div>
           <div className="auth-panel-tagline">
@@ -77,7 +75,7 @@ export default function Register() {
       <div className="auth-panel-form">
         <div className="auth-form-inner">
           <h1>Create account</h1>
-          <p className="auth-subtitle">You'll start with 3 free credits</p>
+          <p className="auth-subtitle">You'll start with 3 free credits{form.referralCode ? ' + 1 referral bonus' : ''}</p>
 
           {error && <div className="alert alert-error">{error}</div>}
 
@@ -108,11 +106,14 @@ export default function Register() {
             </div>
             <div className="form-group">
               <label>Bio</label>
-              <textarea value={form.bio} onChange={set('bio')} rows={2} placeholder="Tell others what you're passionate about…" />
+              <textarea value={form.bio} onChange={set('bio')} rows={2} placeholder="Tell others what you're passionate about..." />
             </div>
-            <button className="btn btn-primary btn-full" type="submit" disabled={loading}
-              style={{ marginTop: '.25rem' }}>
-              {loading ? 'Creating account…' : 'Get Started →'}
+            <div className="form-group">
+              <label>Referral Code (optional)</label>
+              <input type="text" value={form.referralCode} onChange={set('referralCode')} placeholder="e.g. ALI-A3F2C8" />
+            </div>
+            <button className="btn btn-primary btn-full" type="submit" disabled={loading} style={{ marginTop: '.25rem' }}>
+              {loading ? 'Creating account...' : 'Get Started →'}
             </button>
           </form>
 

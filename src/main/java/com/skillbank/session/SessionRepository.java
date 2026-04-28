@@ -44,4 +44,14 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     List<Session> findActiveSessionsByTeacherId(
             @Param("teacherId") Long teacherId,
             @Param("now") LocalDateTime now);
+
+    @Query("""
+        SELECT s FROM Session s
+        WHERE s.status = 'CONFIRMED'
+          AND s.reminderSent = false
+          AND s.scheduledAt BETWEEN :now AND :cutoff
+        """)
+    List<Session> findSessionsNeedingReminder(
+            @Param("now") LocalDateTime now,
+            @Param("cutoff") LocalDateTime cutoff);
 }

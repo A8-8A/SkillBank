@@ -41,6 +41,9 @@ public class Session {
 
     private String notes;
 
+    @Builder.Default
+    private boolean reminderSent = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

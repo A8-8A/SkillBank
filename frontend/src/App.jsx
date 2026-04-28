@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
@@ -14,6 +14,9 @@ import Sessions from './pages/Sessions'
 import Matches from './pages/Matches'
 import Profile from './pages/Profile'
 import Wallet from './pages/Wallet'
+import AdminUsers from './pages/AdminUsers'
+import AdminSessions from './pages/AdminSessions'
+import AdminCredits from './pages/AdminCredits'
 import AdminDisputes from './pages/AdminDisputes'
 
 export default function App() {
@@ -35,6 +38,9 @@ export default function App() {
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/user/:userId" element={<Profile />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/sessions" element={<AdminSessions />} />
+            <Route path="/admin/credits" element={<AdminCredits />} />
             <Route path="/admin/disputes" element={<AdminDisputes />} />
           </Route>
         </Routes>

@@ -12,6 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     Optional<User> findByVerificationToken(String verificationToken);
     Optional<User> findByResetToken(String resetToken);
+    Optional<User> findByReferralCode(String referralCode);
 
     @Query("""
         SELECT DISTINCT u FROM User u

@@ -26,9 +26,7 @@ public class EmailService {
 
     @Async
     public void sendVerificationEmail(String to, String name, String token) {
-        send(
-            to,
-            "Verify your SkillBank email",
+        send(to, "Verify your SkillBank email",
             """
             Hi %s,
 
@@ -39,15 +37,12 @@ public class EmailService {
             This link will remain valid until used.
 
             — SkillBank
-            """.formatted(name, appUrl, token)
-        );
+            """.formatted(name, appUrl, token));
     }
 
     @Async
     public void sendPasswordResetEmail(String to, String name, String token) {
-        send(
-            to,
-            "Reset your SkillBank password",
+        send(to, "Reset your SkillBank password",
             """
             Hi %s,
 
@@ -58,14 +53,66 @@ public class EmailService {
             This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
 
             — SkillBank
-            """.formatted(name, appUrl, token)
-        );
+            """.formatted(name, appUrl, token));
+    }
+
+    @Async
+    public void sendSessionReminder(Session session) {
+        String skillName = session.getSkill().getName();
+        String dateStr = session.getScheduledAt().format(FMT);
+
+        send(session.getTeacher().getEmail(),
+            "Reminder: Session in 2 hours — " + skillName,
+            """
+            Hi %s,
+
+            Friendly reminder — you have a session coming up in about 2 hours.
+
+              Skill:   %s
+              Learner: %s
+              Time:    %s
+
+            Make sure you're ready. Good luck!
+
+            — SkillBank
+            """.formatted(session.getTeacher().getName(), skillName,
+                session.getLearner().getName(), dateStr));
+
+        send(session.getLearner().getEmail(),
+            "Reminder: Session in 2 hours — " + skillName,
+            """
+            Hi %s,
+
+            Friendly reminder — you have a session coming up in about 2 hours.
+
+              Skill:   %s
+              Teacher: %s
+              Time:    %s
+
+            Get ready to learn something new!
+
+            — SkillBank
+            """.formatted(session.getLearner().getName(), skillName,
+                session.getTeacher().getName(), dateStr));
+    }
+
+    @Async
+    public void notifyReferralBonus(String referrerEmail, String referrerName, String newUserName) {
+        send(referrerEmail, "You earned a referral credit!",
+            """
+            Hi %s,
+
+            %s just joined SkillBank using your referral code. You've both received 1 bonus credit!
+
+            Keep sharing your code to earn more.
+
+            — SkillBank
+            """.formatted(referrerName, newUserName));
     }
 
     @Async
     public void notifyTeacherOfNewBooking(Session session) {
-        send(
-            session.getTeacher().getEmail(),
+        send(session.getTeacher().getEmail(),
             "New session request — " + session.getSkill().getName(),
             """
             Hi %s,
@@ -80,20 +127,14 @@ public class EmailService {
             You have until 24 hours before the session to respond, otherwise it will be automatically cancelled.
 
             — SkillBank
-            """.formatted(
-                session.getTeacher().getName(),
-                session.getLearner().getName(),
-                session.getSkill().getName(),
-                session.getScheduledAt().format(FMT),
-                session.getNotes() != null ? session.getNotes() : "None"
-            )
-        );
+            """.formatted(session.getTeacher().getName(), session.getLearner().getName(),
+                session.getSkill().getName(), session.getScheduledAt().format(FMT),
+                session.getNotes() != null ? session.getNotes() : "None"));
     }
 
     @Async
     public void notifyLearnerSessionConfirmed(Session session) {
-        send(
-            session.getLearner().getEmail(),
+        send(session.getLearner().getEmail(),
             "Session confirmed — " + session.getSkill().getName(),
             """
             Hi %s,
@@ -106,19 +147,13 @@ public class EmailService {
             1 credit has been held and will be released to the teacher after the session.
 
             — SkillBank
-            """.formatted(
-                session.getLearner().getName(),
-                session.getTeacher().getName(),
-                session.getSkill().getName(),
-                session.getScheduledAt().format(FMT)
-            )
-        );
+            """.formatted(session.getLearner().getName(), session.getTeacher().getName(),
+                session.getSkill().getName(), session.getScheduledAt().format(FMT)));
     }
 
     @Async
     public void notifyLearnerSessionRejected(Session session) {
-        send(
-            session.getLearner().getEmail(),
+        send(session.getLearner().getEmail(),
             "Session request declined — " + session.getSkill().getName(),
             """
             Hi %s,
@@ -131,19 +166,13 @@ public class EmailService {
             Your 1 credit has been returned to your balance.
 
             — SkillBank
-            """.formatted(
-                session.getLearner().getName(),
-                session.getTeacher().getName(),
-                session.getSkill().getName(),
-                session.getScheduledAt().format(FMT)
-            )
-        );
+            """.formatted(session.getLearner().getName(), session.getTeacher().getName(),
+                session.getSkill().getName(), session.getScheduledAt().format(FMT)));
     }
 
     @Async
     public void notifyBothAutoCancelled(Session session) {
-        send(
-            session.getTeacher().getEmail(),
+        send(session.getTeacher().getEmail(),
             "Session auto-cancelled — " + session.getSkill().getName(),
             """
             Hi %s,
@@ -155,16 +184,10 @@ public class EmailService {
               Date:    %s
 
             — SkillBank
-            """.formatted(
-                session.getTeacher().getName(),
-                session.getSkill().getName(),
-                session.getLearner().getName(),
-                session.getScheduledAt().format(FMT)
-            )
-        );
+            """.formatted(session.getTeacher().getName(), session.getSkill().getName(),
+                session.getLearner().getName(), session.getScheduledAt().format(FMT)));
 
-        send(
-            session.getLearner().getEmail(),
+        send(session.getLearner().getEmail(),
             "Session auto-cancelled — " + session.getSkill().getName(),
             """
             Hi %s,
@@ -178,13 +201,8 @@ public class EmailService {
             Your 1 credit has been returned to your balance.
 
             — SkillBank
-            """.formatted(
-                session.getLearner().getName(),
-                session.getSkill().getName(),
-                session.getTeacher().getName(),
-                session.getScheduledAt().format(FMT)
-            )
-        );
+            """.formatted(session.getLearner().getName(), session.getSkill().getName(),
+                session.getTeacher().getName(), session.getScheduledAt().format(FMT)));
     }
 
     private void send(String to, String subject, String body) {

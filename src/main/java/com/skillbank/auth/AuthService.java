@@ -16,7 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,7 @@ public class AuthService {
         }
 
         String verificationToken = UUID.randomUUID().toString();
+        String referralCode = generateReferralCode(request.getName());
 
         User user = User.builder()
                 .name(request.getName())
@@ -48,14 +51,30 @@ public class AuthService {
                 .role(Role.USER)
                 .emailVerified(false)
                 .verificationToken(verificationToken)
+                .referralCode(referralCode)
                 .build();
+
+        // Handle referral
+        if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {
+            Optional<User> referrer = userRepository.findByReferralCode(request.getReferralCode().trim());
+            referrer.ifPresent(r -> user.setReferredBy(r.getId()));
+        }
 
         user = userRepository.save(user);
         escrowService.seedNewUser(user);
 
+        // Credit referral bonus
+        if (user.getReferredBy() != null) {
+            User referrer = userRepository.findById(user.getReferredBy()).orElse(null);
+            if (referrer != null) {
+                escrowService.purchaseCredits(referrer, BigDecimal.ONE);
+                escrowService.purchaseCredits(user, BigDecimal.ONE);
+                emailService.notifyReferralBonus(referrer.getEmail(), referrer.getName(), user.getName());
+            }
+        }
+
         emailService.sendVerificationEmail(user.getEmail(), user.getName(), verificationToken);
 
-        // Return response without token — user must verify email first
         return new AuthResponse(null, user.getId(), user.getName(), user.getEmail(), user.getRole().name());
     }
 
@@ -97,7 +116,6 @@ public class AuthService {
 
             emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetToken);
         });
-        // Always succeed silently — don't reveal if email exists
     }
 
     @Transactional
@@ -131,5 +149,17 @@ public class AuthService {
         userRepository.save(user);
 
         emailService.sendVerificationEmail(user.getEmail(), user.getName(), verificationToken);
+    }
+
+    private String generateReferralCode(String name) {
+        String prefix = name.replaceAll("[^a-zA-Z]", "").toUpperCase();
+        if (prefix.length() > 4) prefix = prefix.substring(0, 4);
+        if (prefix.isEmpty()) prefix = "USER";
+        String code = prefix + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        while (userRepository.findByReferralCode(code).isPresent()) {
+            code = prefix + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+        return code;
     }
 }

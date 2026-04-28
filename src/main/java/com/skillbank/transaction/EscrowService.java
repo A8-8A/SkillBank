@@ -90,7 +90,7 @@ public class EscrowService {
                 .fromUser(null)
                 .toUser(user)
                 .session(null)
-                .hours(new BigDecimal("3.00"))
+                .hours(new BigDecimal("1.00"))
                 .type(TransactionType.PURCHASE)
                 .build());
     }
