@@ -8,7 +8,7 @@ For example: if you know how to play guitar, you can teach someone for 1 hour an
 
 Every new user starts with 3 free credits so they can begin learning right away, even before they teach anyone.
 
-Users can also buy credits with real money ($20 for 1 credit, or $80 for 5 credits) and cash out credits for real money (5 credits = $50). This is how the platform makes money — the $30 difference between what people pay and what they can cash out.
+Users can also buy credits with real money ($15 for 1 credit, or $60 for 5 credits) and cash out credits for real money (5 credits = $50). This is how the platform makes money — the  difference between what people pay and what they can cash out.
 
 ---
 
