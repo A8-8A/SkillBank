@@ -6,22 +6,46 @@ export default function Matches() {
   const [tab, setTab] = useState('mutual')
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
+    loadMatches()
+  }, [tab])
+
+  const loadMatches = () => {
     setLoading(true)
     const endpoint = tab === 'mutual'
       ? '/matches/mutual'
       : tab === 'one-way'
       ? '/matches/one-way'
-      : '/matches/seeking-me'
+      : `/matches/all${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`
     client.get(endpoint).then(r => setMatches(r.data)).finally(() => setLoading(false))
-  }, [tab])
+  }
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    if (tab === 'all') loadMatches()
+  }
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value)
+    if (tab === 'all') {
+      clearTimeout(window._matchSearchTimeout)
+      window._matchSearchTimeout = setTimeout(() => {
+        setLoading(true)
+        const endpoint = value
+          ? `/matches/all?q=${encodeURIComponent(value)}`
+          : '/matches/all'
+        client.get(endpoint).then(r => setMatches(r.data)).finally(() => setLoading(false))
+      }, 400)
+    }
+  }
 
   return (
     <div className="page">
       <h1>Matches</h1>
-      <p className="muted">People you can exchange skills with. Click "View Profile" to see their availability and book a slot.</p>
+      <p className="muted">Find people to exchange skills with. Click "View Profile" to see their availability and book a session.</p>
 
       <div className="tabs">
         <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>
@@ -30,10 +54,22 @@ export default function Matches() {
         <button className={`tab ${tab === 'one-way' ? 'active' : ''}`} onClick={() => setTab('one-way')}>
           They teach me
         </button>
-        <button className={`tab ${tab === 'seeking-me' ? 'active' : ''}`} onClick={() => setTab('seeking-me')}>
-          Want my skills
+        <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+          All Users
         </button>
       </div>
+
+      {tab === 'all' && (
+        <form onSubmit={handleSearch} className="search-bar-wrapper">
+          <input
+            type="text"
+            placeholder="Search by name, skill, category, or tag..."
+            value={searchQuery}
+            onChange={e => handleSearchChange(e.target.value)}
+            className="search-bar-input"
+          />
+        </form>
+      )}
 
       {loading ? <div className="loading" />
         : matches.length === 0 ? (
@@ -41,7 +77,7 @@ export default function Matches() {
             <p>{
               tab === 'mutual'    ? 'No mutual matches yet. Add more skills you offer and seek.' :
               tab === 'one-way'   ? 'No one found teaching what you want to learn yet.' :
-                                   'No one is seeking your skills yet. Make sure you have skills listed as Teach.'
+                                   searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.'
             }</p>
           </div>
         ) : (
@@ -59,24 +95,30 @@ export default function Matches() {
                 </div>
                 {m.bio && <p className="match-bio">{m.bio}</p>}
                 <div className="match-skills">
-                  <div>
-                    <span className="skill-type-label offer">Teaches</span>
-                    <div className="tags">
-                      {m.skillsTheyOffer.map(s => <span key={s} className="tag">{s}</span>)}
+                  {m.skillsTheyOffer.length > 0 && (
+                    <div>
+                      <span className="skill-type-label offer">Teachable Skills</span>
+                      <div className="tags">
+                        {m.skillsTheyOffer.map(s => <span key={s} className="tag">{s}</span>)}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <span className="skill-type-label seek">Wants to Learn</span>
-                    <div className="tags">
-                      {m.skillsTheySeek.map(s => <span key={s} className="tag tag-seek">{s}</span>)}
+                  )}
+                  {m.skillsTheySeek.length > 0 && (
+                    <div>
+                      <span className="skill-type-label seek">Learnable Skills</span>
+                      <div className="tags">
+                        {m.skillsTheySeek.map(s => <span key={s} className="tag tag-seek">{s}</span>)}
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {m.skillsTheyOffer.length === 0 && m.skillsTheySeek.length === 0 && (
+                    <p className="muted" style={{ fontSize: '0.85rem' }}>No skills listed yet</p>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
-
     </div>
   )
 }

@@ -5,6 +5,7 @@ import com.skillbank.skill.SkillType;
 import com.skillbank.skill.UserSkill;
 import com.skillbank.skill.UserSkillRepository;
 import com.skillbank.user.User;
+import com.skillbank.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.List;
 public class MatchService {
 
     private final UserSkillRepository userSkillRepo;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<MatchDTO> getMutualMatches(User currentUser) {
@@ -36,6 +38,22 @@ public class MatchService {
     public List<MatchDTO> getUsersSeekingMySkills(User currentUser) {
         List<User> seekers = userSkillRepo.findUsersSeekingMySkills(currentUser.getId());
         return seekers.stream().map(u -> buildMatchDTO(u, currentUser.getId())).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchDTO> searchAllUsers(User currentUser, String query) {
+        List<User> users;
+
+        if (query == null || query.isBlank()) {
+            users = userRepository.findAll();
+        } else {
+            users = userRepository.searchByNameOrSkillOrCategoryOrTag(query.trim().toLowerCase());
+        }
+
+        return users.stream()
+                .filter(u -> !u.getId().equals(currentUser.getId()))
+                .map(u -> buildMatchDTO(u, currentUser.getId()))
+                .toList();
     }
 
     private MatchDTO buildMatchDTO(User user, Long forUserId) {

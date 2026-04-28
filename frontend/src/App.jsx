@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
+import HomePage from './pages/HomePage'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
@@ -20,21 +21,21 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify" element={<VerifyEmail />} />
-          <Route path="/" element={<ProtectedRoute><Navbar /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="skills" element={<Skills />} />
-            <Route path="sessions" element={<Sessions />} />
-            <Route path="matches" element={<Matches />} />
-            <Route path="wallet" element={<Wallet />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="user/:userId" element={<Profile />} />
-            <Route path="admin/disputes" element={<AdminDisputes />} />
+          <Route element={<ProtectedRoute><Navbar /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/skills" element={<Skills />} />
+            <Route path="/sessions" element={<Sessions />} />
+            <Route path="/matches" element={<Matches />} />
+            <Route path="/wallet" element={<Wallet />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/user/:userId" element={<Profile />} />
+            <Route path="/admin/disputes" element={<AdminDisputes />} />
           </Route>
         </Routes>
       </BrowserRouter>

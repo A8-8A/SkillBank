@@ -26,8 +26,6 @@ export default function Dashboard() {
 
   return (
     <div className="page">
-
-      {/* ── Hero ────────────────────────────────────────────────────────── */}
       <div className="hero-section">
         <div className="hero-bg">
           <img
@@ -48,7 +46,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Stats ───────────────────────────────────────────────────────── */}
       <div className="stats-row">
         <div className="stat-card" style={{ animationDelay: '.05s' }}>
           <div className="stat-label">Based in</div>
@@ -66,12 +63,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Promo Banners ────────────────────────────────────────────────── */}
       <div className="promo-row">
         <Link to="/wallet" className="promo-banner promo-buy">
           <div className="promo-text">
             <h3>Need more credits?</h3>
-            <p>Get 5 credits for just <strong>$80</strong> — save $20</p>
+            <p>Get 5 credits for just <strong>$60</strong> — 4 + 1 free</p>
           </div>
           <span className="promo-cta">Buy Now</span>
         </Link>
@@ -85,7 +81,6 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* ── Quick Actions ────────────────────────────────────────────────── */}
       <div>
         <div className="section-header" style={{ marginBottom: '1rem' }}>
           <h2>Quick Actions</h2>
@@ -106,7 +101,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Recent Sessions ──────────────────────────────────────────────── */}
       <div>
         <div className="section-header" style={{ marginBottom: '1rem' }}>
           <h2>Recent Sessions</h2>

@@ -30,4 +30,11 @@ public class MatchController {
     public ResponseEntity<List<MatchDTO>> getUsersSeekingMySkills(@AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(matchService.getUsersSeekingMySkills(currentUser));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<MatchDTO>> searchAllUsers(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(matchService.searchAllUsers(currentUser, q));
+    }
 }

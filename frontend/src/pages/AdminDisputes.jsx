@@ -12,7 +12,6 @@ export default function AdminDisputes() {
   const [resolving, setResolving] = useState(null)
   const [adminNotes, setAdminNotes] = useState('')
 
-  // Credit management state
   const [creditEmail, setCreditEmail] = useState('')
   const [creditAmount, setCreditAmount] = useState('')
   const [creditAction, setCreditAction] = useState('add')
@@ -44,14 +43,17 @@ export default function AdminDisputes() {
 
     try {
       const endpoint = creditAction === 'add' ? '/admin/credits/add' : '/admin/credits/deduct'
-      const { data } = await client.post(endpoint, {
+      const res = await client.post(endpoint, {
         email: creditEmail,
         amount: parseFloat(creditAmount)
       })
-      setCreditMsg(`${data.message}. New balance: ${data.newBalance}`)
+      setCreditMsg(`${res.data.message}. New balance: ${res.data.newBalance}`)
       setCreditAmount('')
     } catch (err) {
-      setCreditError(err.response?.data?.error || err.response?.data?.message || 'Operation failed')
+      const msg = err.response?.data?.error
+        || err.response?.data?.message
+        || (err.response?.status === 403 ? 'Access denied — admin role required' : 'Operation failed')
+      setCreditError(msg)
     } finally {
       setCreditLoading(false)
     }
@@ -61,7 +63,6 @@ export default function AdminDisputes() {
 
   return (
     <div className="page">
-      {/* Tabs */}
       <div className="wallet-tabs" style={{ marginBottom: '1.5rem' }}>
         <button
           className={`wallet-tab ${tab === 'disputes' ? 'wallet-tab-active' : ''}`}
@@ -77,7 +78,6 @@ export default function AdminDisputes() {
         </button>
       </div>
 
-      {/* Disputes Tab */}
       {tab === 'disputes' && (
         <>
           <h1>Open Disputes</h1>
@@ -123,7 +123,6 @@ export default function AdminDisputes() {
         </>
       )}
 
-      {/* Credit Management Tab */}
       {tab === 'credits' && (
         <>
           <h1>Credit Management</h1>
@@ -184,10 +183,10 @@ export default function AdminDisputes() {
             </form>
 
             <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--surface-2)', borderRadius: '10px' }}>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
                 <strong>Quick reference:</strong><br />
-                1 credit purchase = $20<br />
-                5 credits purchase = $80<br />
+                1 credit purchase = $15<br />
+                5 credits purchase = $60<br />
                 5 credits redemption = $50 payout
               </p>
             </div>
