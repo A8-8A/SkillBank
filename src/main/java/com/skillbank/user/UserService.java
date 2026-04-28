@@ -8,6 +8,7 @@ import com.skillbank.transaction.EscrowService;
 import com.skillbank.user.dto.UserProfileResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -57,15 +59,32 @@ public class UserService {
     private UserProfileResponse toResponse(User user) {
         BigDecimal balance = escrowService.getBalance(user.getId());
 
-        Double teachAvg = reviewRepository.getAverageRating(user.getId(), ReviewType.TEACHING);
-        Double learnAvg = reviewRepository.getAverageRating(user.getId(), ReviewType.LEARNING);
-        long teachCount = reviewRepository.countByRevieweeAndType(user.getId(), ReviewType.TEACHING);
-        long learnCount = reviewRepository.countByRevieweeAndType(user.getId(), ReviewType.LEARNING);
+        double teachingRating = 0;
+        long teachingReviewCount = 0;
+        double learningRating = 0;
+        long learningReviewCount = 0;
+        long sessionsTaught = 0;
+        long sessionsLearned = 0;
 
-        long sessionsTaught = sessionRepository.findByTeacherIdOrderByScheduledAtDesc(user.getId()).stream()
-                .filter(s -> s.getStatus() == SessionStatus.COMPLETED).count();
-        long sessionsLearned = sessionRepository.findByLearnerIdOrderByScheduledAtDesc(user.getId()).stream()
-                .filter(s -> s.getStatus() == SessionStatus.COMPLETED).count();
+        try {
+            Double teachAvg = reviewRepository.getAverageRating(user.getId(), ReviewType.TEACHING);
+            Double learnAvg = reviewRepository.getAverageRating(user.getId(), ReviewType.LEARNING);
+            teachingReviewCount = reviewRepository.countByRevieweeAndType(user.getId(), ReviewType.TEACHING);
+            learningReviewCount = reviewRepository.countByRevieweeAndType(user.getId(), ReviewType.LEARNING);
+            teachingRating = teachAvg != null ? Math.round(teachAvg * 10.0) / 10.0 : 0;
+            learningRating = learnAvg != null ? Math.round(learnAvg * 10.0) / 10.0 : 0;
+        } catch (Exception e) {
+            log.warn("Failed to load review stats for user {}: {}", user.getId(), e.getMessage());
+        }
+
+        try {
+            sessionsTaught = sessionRepository.findByTeacherIdOrderByScheduledAtDesc(user.getId()).stream()
+                    .filter(s -> s.getStatus() == SessionStatus.COMPLETED).count();
+            sessionsLearned = sessionRepository.findByLearnerIdOrderByScheduledAtDesc(user.getId()).stream()
+                    .filter(s -> s.getStatus() == SessionStatus.COMPLETED).count();
+        } catch (Exception e) {
+            log.warn("Failed to load session counts for user {}: {}", user.getId(), e.getMessage());
+        }
 
         return UserProfileResponse.builder()
                 .id(user.getId())
@@ -79,10 +98,10 @@ public class UserService {
                 .balance(balance)
                 .createdAt(user.getCreatedAt())
                 .referralCode(user.getReferralCode())
-                .teachingRating(teachAvg != null ? Math.round(teachAvg * 10.0) / 10.0 : 0)
-                .teachingReviewCount(teachCount)
-                .learningRating(learnAvg != null ? Math.round(learnAvg * 10.0) / 10.0 : 0)
-                .learningReviewCount(learnCount)
+                .teachingRating(teachingRating)
+                .teachingReviewCount(teachingReviewCount)
+                .learningRating(learningRating)
+                .learningReviewCount(learningReviewCount)
                 .sessionsTaught(sessionsTaught)
                 .sessionsLearned(sessionsLearned)
                 .build();

@@ -20,6 +20,7 @@ export default function Profile() {
   const [skills, setSkills]       = useState([])
   const [slots, setSlots]         = useState([])
   const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState('')
   const [editing, setEditing]     = useState(false)
   const [editForm, setEditForm]   = useState({})
   const [booking, setBooking]     = useState(null)
@@ -30,9 +31,15 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false)
 
   const load = () => {
-    if (!targetId) return
+    if (!targetId && !isOwn) return
     setLoading(true)
-    client.get(`/users/${targetId}`)
+    setError('')
+
+    const profileUrl = isOwn ? '/users/me' : `/users/${targetId}`
+    const skillsUrl = isOwn ? `/skills/user/${currentUser?.userId}` : `/skills/user/${targetId}`
+    const availUrl = isOwn ? `/availability/${currentUser?.userId}` : `/availability/${targetId}`
+
+    client.get(profileUrl)
       .then(p => {
         setProfile(p.data)
         setEditForm({
@@ -42,10 +49,17 @@ export default function Profile() {
           phoneNumber: p.data.phoneNumber || ''
         })
       })
+      .catch(err => {
+        console.error('Failed to load profile:', err)
+        setError('Failed to load profile. Please try refreshing the page.')
+      })
       .finally(() => setLoading(false))
 
-    client.get(`/skills/user/${targetId}`).then(r => setSkills(r.data)).catch(() => {})
-    client.get(`/availability/${targetId}`).then(r => setSlots(r.data)).catch(() => {})
+    if (targetId || currentUser?.userId) {
+      const uid = targetId || currentUser?.userId
+      client.get(`/skills/user/${uid}`).then(r => setSkills(r.data)).catch(() => {})
+      client.get(`/availability/${uid}`).then(r => setSlots(r.data)).catch(() => {})
+    }
   }
 
   useEffect(() => { load() }, [targetId])
@@ -125,6 +139,7 @@ export default function Profile() {
   }
 
   if (loading) return <div className="loading">Loading profile...</div>
+  if (error) return <div className="page"><div className="alert alert-error">{error}</div></div>
   if (!profile) return <div className="loading">User not found.</div>
 
   const offers = skills.filter(s => s.type === 'OFFER')
@@ -169,7 +184,7 @@ export default function Profile() {
                   color: 'white',
                   border: '2px solid white'
                 }}>
-                  {uploading ? '...' : '📷'}
+                  {uploading ? '...' : '+'}
                 </div>
               )}
             </div>
@@ -217,8 +232,8 @@ export default function Profile() {
               <>
                 <h1>{profile.name}</h1>
                 <div className="profile-meta">
-                  {profile.city && <span>📍 {profile.city}</span>}
-                  {profile.phoneNumber && <span>📞 {profile.phoneNumber}</span>}
+                  {profile.city && <span>{profile.city}</span>}
+                  {profile.phoneNumber && <span>{profile.phoneNumber}</span>}
                   <span>Joined {new Date(profile.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' })}</span>
                 </div>
                 {profile.bio && <p className="profile-bio">{profile.bio}</p>}
