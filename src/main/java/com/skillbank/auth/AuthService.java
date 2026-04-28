@@ -56,8 +56,10 @@ public class AuthService {
 
         // Handle referral
         if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {
-            Optional<User> referrer = userRepository.findByReferralCode(request.getReferralCode().trim());
-            referrer.ifPresent(r -> user.setReferredBy(r.getId()));
+            User referrer = userRepository.findByReferralCode(request.getReferralCode().trim()).orElse(null);
+            if (referrer != null) {
+                user.setReferredBy(referrer.getId());
+            }
         }
 
         user = userRepository.save(user);
