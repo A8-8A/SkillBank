@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
 
-const WHATSAPP_NUMBER = '961XXXXXXXX' // <-- REPLACE with your actual WhatsApp number
+const WHATSAPP_NUMBER = '96176860746' // <-- REPLACE with your actual WhatsApp number
 
 export default function Wallet() {
   const { user } = useAuth()
