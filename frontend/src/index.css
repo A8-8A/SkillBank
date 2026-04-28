@@ -856,3 +856,176 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
   .referral-inner { flex-direction: column; text-align: center; }
   .profile-stats-row { grid-template-columns: 1fr; }
 }
+/* ── Homepage Section Description ──────────────────────────────────── */
+.home-section-desc {
+  font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7;
+  max-width: 600px; margin: -1.5rem auto 2.5rem;
+}
+
+/* ── Animated Visual Flow ─────────────────────────────────────────── */
+.home-flow {
+  display: flex; justify-content: center; gap: 0;
+  position: relative;
+}
+.home-flow-step {
+  flex: 1; max-width: 180px; text-align: center;
+  padding: 1.25rem 0.75rem; position: relative;
+  opacity: 0.4; transition: all .4s ease; transform: scale(0.95);
+}
+.home-flow-step.home-flow-active {
+  opacity: 1; transform: scale(1.05);
+}
+.home-flow-step.home-flow-done {
+  opacity: 0.7; transform: scale(1);
+}
+.home-flow-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface-2); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700; color: var(--muted);
+  margin: 0 auto 0.75rem; transition: all .4s ease;
+}
+.home-flow-active .home-flow-icon {
+  background: var(--color-primary, #2d6a4f); border-color: var(--color-primary, #2d6a4f);
+  color: white; box-shadow: 0 4px 16px rgba(45,106,79,.3);
+}
+.home-flow-done .home-flow-icon {
+  background: rgba(45,106,79,.15); border-color: var(--color-primary, #2d6a4f);
+  color: var(--color-primary, #2d6a4f);
+}
+.home-flow-connector {
+  position: absolute; top: 34px; right: -50%; width: 100%; height: 2px;
+  background: var(--border); z-index: -1;
+}
+.home-flow-step:last-child .home-flow-connector { display: none; }
+.home-flow-step h4 { font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text); }
+.home-flow-step p { font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+
+/* ── Credit Cycle ─────────────────────────────────────────────────── */
+.home-credit-cycle {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;
+}
+.credit-node {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; padding: 1.5rem; width: 200px; text-align: center;
+}
+.credit-node-teach { border-color: #2d6a4f; }
+.credit-node-earn { border-color: #d4a017; }
+.credit-node-learn { border-color: #4a90a4; }
+.credit-node-inner h4 { font-size: 1rem; margin: 0 0 0.35rem; color: var(--text); }
+.credit-node-inner p { font-size: 0.8rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+.credit-arrow {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.2rem; color: var(--muted); font-size: 1.5rem;
+}
+.credit-arrow span {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--color-primary, #2d6a4f);
+}
+.home-credit-extras {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
+  max-width: 700px; margin: 0 auto;
+}
+.credit-extra { text-align: center; }
+.credit-extra-number {
+  font-size: 2rem; font-weight: 700; color: var(--color-primary, #2d6a4f);
+  margin-bottom: 0.25rem;
+}
+.credit-extra p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+
+/* ── Example Scenario ─────────────────────────────────────────────── */
+.home-example {
+  display: flex; align-items: center; justify-content: center;
+  gap: 2rem; margin-bottom: 1.5rem;
+}
+.example-person { text-align: center; min-width: 140px; }
+.example-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; font-weight: 700; color: white;
+  margin: 0 auto 0.75rem;
+}
+.example-avatar-1 { background: #2d6a4f; }
+.example-avatar-2 { background: #4a6741; }
+.example-person h3 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+.example-tags { display: flex; flex-direction: column; gap: 0.35rem; }
+.example-tag {
+  font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.7rem;
+  border-radius: 8px; display: inline-block;
+}
+.example-tag-teach { background: rgba(45,106,79,.1); color: #2d6a4f; }
+.example-tag-learn { background: rgba(74,144,164,.1); color: #4a90a4; }
+
+.example-exchange { text-align: center; min-width: 200px; }
+.example-exchange-center {
+  font-size: 0.85rem; font-weight: 700; color: var(--color-primary, #2d6a4f);
+  padding: 0.5rem 0; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.example-exchange-line {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.example-exchange-label { font-size: 0.8rem; color: var(--text-secondary); }
+.example-exchange-arrow { font-size: 1.2rem; color: var(--color-primary, #2d6a4f); }
+
+.home-example-caption {
+  font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7;
+  max-width: 550px; margin: 0 auto; text-align: center;
+}
+
+/* ── Detailed Steps ───────────────────────────────────────────────── */
+.home-detailed-steps {
+  max-width: 640px; margin: 0 auto; text-align: left;
+  display: flex; flex-direction: column; gap: 0;
+}
+.detailed-step {
+  display: flex; gap: 1.25rem; padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.detailed-step:last-child { border-bottom: none; }
+.detailed-step-num {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: var(--color-primary, #2d6a4f); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; margin-top: 0.15rem;
+}
+.detailed-step-content h3 { font-size: 1.05rem; margin: 0 0 0.4rem; color: var(--text); }
+.detailed-step-content p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.6; }
+
+/* ── FAQ ───────────────────────────────────────────────────────────── */
+.home-faq-list { max-width: 640px; margin: 0 auto; text-align: left; }
+.home-faq-item {
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer; transition: background .15s ease;
+}
+.home-faq-item:hover { background: rgba(0,0,0,.02); }
+.home-faq-question {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 0.5rem; font-size: 1rem; font-weight: 600; color: var(--text);
+}
+.home-faq-toggle {
+  font-size: 1.4rem; color: var(--muted); width: 28px; text-align: center;
+  flex-shrink: 0;
+}
+.home-faq-answer {
+  padding: 0 0.5rem 1.25rem;
+  font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7;
+}
+
+/* ── Expanded Features Grid (now 6 instead of 3) ──────────────────── */
+.home-features-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem;
+}
+
+/* ── Mobile Responsive for new sections ───────────────────────────── */
+@media (max-width: 700px) {
+  .home-flow { flex-wrap: wrap; gap: 0.5rem; }
+  .home-flow-step { max-width: 140px; }
+  .home-flow-connector { display: none; }
+  .home-credit-cycle { flex-direction: column; gap: 0.75rem; }
+  .credit-arrow { transform: rotate(90deg); }
+  .home-credit-extras { grid-template-columns: 1fr; gap: 1rem; }
+  .home-example { flex-direction: column; gap: 1.5rem; }
+  .example-exchange { min-width: auto; }
+  .home-features-row { grid-template-columns: 1fr; }
+}
