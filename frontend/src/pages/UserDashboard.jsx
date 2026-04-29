@@ -24,17 +24,24 @@ export default function UserDashboard() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    Promise.all([
-      client.get('/users/me'),
-      client.get('/sessions'),
-      client.get(`/skills/user/${user?.userId}`).catch(() => ({ data: [] })),
-      client.get(`/availability/${user?.userId}`).catch(() => ({ data: [] })),
-    ]).then(([profileRes, sessionsRes, skillsRes, slotsRes]) => {
-      setProfile(profileRes.data)
-      setSessions(sessionsRes.data.slice(0, 5))
-      setSkills(skillsRes.data)
-      setSlots(slotsRes.data)
-    }).finally(() => setLoading(false))
+    // First get profile, then use profile.id for other calls
+    client.get('/users/me')
+      .then(profileRes => {
+        setProfile(profileRes.data)
+        const uid = profileRes.data.id
+        return Promise.all([
+          client.get('/sessions').catch(() => ({ data: [] })),
+          client.get(`/skills/user/${uid}`).catch(() => ({ data: [] })),
+          client.get(`/availability/${uid}`).catch(() => ({ data: [] })),
+        ])
+      })
+      .then(([sessionsRes, skillsRes, slotsRes]) => {
+        setSessions(sessionsRes.data.slice(0, 5))
+        setSkills(skillsRes.data)
+        setSlots(slotsRes.data)
+      })
+      .catch(err => console.error('Dashboard load failed:', err))
+      .finally(() => setLoading(false))
   }, [])
 
   const copyReferral = () => {
@@ -62,7 +69,7 @@ export default function UserDashboard() {
         <div className="hero-content">
           <div>
             <p className="hero-greeting">Good to see you</p>
-            <h1 className="hero-name">{user?.name}</h1>
+            <h1 className="hero-name">{profile?.name || user?.name}</h1>
           </div>
           <div className="hero-balance-display">
             <span className="hero-balance-number">{profile?.balance ?? '—'}</span>
@@ -177,7 +184,8 @@ export default function UserDashboard() {
               <thead><tr><th>Skill</th><th>With</th><th>Date</th><th>Status</th></tr></thead>
               <tbody>
                 {sessions.map(s => {
-                  const other = s.teacher?.id === user?.userId ? s.learner : s.teacher
+                  const isTeacher = s.teacher?.id === profile?.id
+                  const other = isTeacher ? s.learner : s.teacher
                   return (
                     <tr key={s.id}>
                       <td><strong>{s.skill?.name}</strong></td>

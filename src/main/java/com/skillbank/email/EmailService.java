@@ -24,7 +24,7 @@ public class EmailService {
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("EEEE, MMM d yyyy 'at' h:mm a");
 
-    @Async
+    // NOT @Async — verification must be synchronous so errors bubble up
     public void sendVerificationEmail(String to, String name, String token) {
         send(to, "Verify your SkillBank email",
             """
@@ -40,7 +40,7 @@ public class EmailService {
             """.formatted(name, appUrl, token));
     }
 
-    @Async
+    // NOT @Async — password reset should also be reliable
     public void sendPasswordResetEmail(String to, String name, String token) {
         send(to, "Reset your SkillBank password",
             """

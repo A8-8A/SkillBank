@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 
 export default function Matches() {
-  const [tab, setTab] = useState('mutual')
+  const [tab, setTab] = useState('all')
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,14 +48,14 @@ export default function Matches() {
       <p className="muted">Find people to exchange skills with. Click "View Profile" to see their availability and book a session.</p>
 
       <div className="tabs">
-        <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>
-          Mutual
+        <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
+          All Users
         </button>
         <button className={`tab ${tab === 'one-way' ? 'active' : ''}`} onClick={() => setTab('one-way')}>
           They teach me
         </button>
-        <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-          All Users
+        <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>
+          Mutual
         </button>
       </div>
 
@@ -75,9 +75,9 @@ export default function Matches() {
         : matches.length === 0 ? (
           <div className="empty-state">
             <p>{
-              tab === 'mutual'    ? 'No mutual matches yet. Add more skills you offer and seek.' :
+              tab === 'all'       ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
               tab === 'one-way'   ? 'No one found teaching what you want to learn yet.' :
-                                   searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.'
+                                    'No mutual matches yet. Add more skills you offer and seek.'
             }</p>
           </div>
         ) : (

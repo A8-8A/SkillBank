@@ -34,7 +34,7 @@ export default function Register() {
         <div className="auth-panel-image">
           <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Community learning together" />
           <div className="auth-panel-overlay">
-            <div className="auth-panel-brand">SkillBank ✦</div>
+            <div className="auth-panel-brand">SkillBank</div>
             <div className="auth-panel-tagline">
               <h2>Your skills<br />have value.</h2>
               <p>Join a community that trades knowledge — no money, just time.</p>
@@ -64,7 +64,7 @@ export default function Register() {
       <div className="auth-panel-image">
         <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80" alt="Community learning together" />
         <div className="auth-panel-overlay">
-          <div className="auth-panel-brand">SkillBank ✦</div>
+          <div className="auth-panel-brand">SkillBank</div>
           <div className="auth-panel-tagline">
             <h2>Your skills<br />have value.</h2>
             <p>Join a community that trades knowledge — no money, just time.</p>
@@ -75,7 +75,7 @@ export default function Register() {
       <div className="auth-panel-form">
         <div className="auth-form-inner">
           <h1>Create account</h1>
-          <p className="auth-subtitle">You'll start with 3 free credits{form.referralCode ? ' + 1 referral bonus' : ''}</p>
+          <p className="auth-subtitle">You'll start with 1 free credit{form.referralCode ? ' + 1 referral bonus' : ''}</p>
 
           {error && <div className="alert alert-error">{error}</div>}
 

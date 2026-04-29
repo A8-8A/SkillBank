@@ -6,7 +6,7 @@ const ROTATING_WORDS = ['Guitar', 'Cooking', 'Python', 'Photography', 'Design', 
 const FAQS = [
   {
     q: 'Is SkillBank free to use?',
-    a: 'Yes. You sign up for free and start with 3 credits — enough to book 3 hours of learning. You earn more credits by teaching others. You can also purchase additional credits if you want to learn more without teaching first.'
+    a: 'Yes. You sign up for free and start with 1 credit — enough to book your first hour of learning. You earn more credits by teaching others. You can also purchase additional credits if you want to learn more without teaching first.'
   },
   {
     q: 'How do sessions work?',
@@ -51,7 +51,7 @@ export default function HomePage() {
   }, [])
 
   const flowSteps = [
-    { label: 'Sign Up', desc: 'Create your free account and get 3 credits', icon: '1' },
+    { label: 'Sign Up', desc: 'Create your free account and get 1 credit', icon: '1' },
     { label: 'List Skills', desc: 'Add what you can teach and what you want to learn', icon: '2' },
     { label: 'Get Matched', desc: 'We find people who complement your skills', icon: '3' },
     { label: 'Book a Session', desc: 'Pick a time, book a 1-hour session', icon: '4' },
@@ -60,19 +60,14 @@ export default function HomePage() {
 
   return (
     <div className="homepage">
-      {/* Navbar */}
       <nav className="home-nav">
         <div className="home-nav-brand">SkillBank</div>
         <Link to="/login" className="btn btn-sm home-login-btn">Sign In</Link>
       </nav>
 
-      {/* Hero */}
       <section className="home-hero">
         <div className="home-hero-bg">
-          <img
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1800&q=80"
-            alt="People collaborating"
-          />
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1800&q=80" alt="People collaborating" />
           <div className="home-hero-overlay" />
         </div>
         <div className="home-hero-content">
@@ -91,7 +86,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Animated Visual Flow */}
       <section className="home-section">
         <h2 className="home-section-title">Your Journey on SkillBank</h2>
         <div className="home-flow">
@@ -106,7 +100,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What Are Credits */}
       <section className="home-section home-section-alt">
         <h2 className="home-section-title">What Are Credits?</h2>
         <p className="home-section-desc">
@@ -140,8 +133,8 @@ export default function HomePage() {
         </div>
         <div className="home-credit-extras">
           <div className="credit-extra">
-            <div className="credit-extra-number">3</div>
-            <p>Free credits when you sign up — start learning immediately</p>
+            <div className="credit-extra-number">1</div>
+            <p>Free credit when you sign up — start learning immediately</p>
           </div>
           <div className="credit-extra">
             <div className="credit-extra-number">$15</div>
@@ -154,7 +147,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Real Example */}
       <section className="home-section">
         <h2 className="home-section-title">See It In Action</h2>
         <div className="home-example">
@@ -191,7 +183,6 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* How It Works (detailed) */}
       <section className="home-section home-section-alt">
         <h2 className="home-section-title">How It Works — Step by Step</h2>
         <div className="home-detailed-steps">
@@ -199,7 +190,7 @@ export default function HomePage() {
             <div className="detailed-step-num">1</div>
             <div className="detailed-step-content">
               <h3>Create your account</h3>
-              <p>Sign up with your email, verify it, and you're in. You start with 3 free credits — no payment needed. Fill out your profile so others can find you.</p>
+              <p>Sign up with your email, verify it, and you're in. You start with 1 free credit — no payment needed. Fill out your profile so others can find you.</p>
             </div>
           </div>
           <div className="detailed-step">
@@ -240,13 +231,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why SkillBank */}
       <section className="home-section">
         <h2 className="home-section-title">Why SkillBank?</h2>
         <div className="home-features-row">
           <div className="home-feature-card">
             <h3>No money needed</h3>
-            <p>Start with 3 free credits. Earn more by teaching. Trade your time, not your wallet.</p>
+            <p>Start with 1 free credit. Earn more by teaching. Trade your time, not your wallet.</p>
           </div>
           <div className="home-feature-card">
             <h3>Protected by escrow</h3>
@@ -271,7 +261,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="home-section home-section-alt">
         <h2 className="home-section-title">Frequently Asked Questions</h2>
         <div className="home-faq-list">
@@ -293,14 +282,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="home-section home-cta-section">
         <h2>Ready to start trading skills?</h2>
-        <p>Join SkillBank today. Get 3 free credits and start learning something new.</p>
+        <p>Join SkillBank today. Get a free credit and start learning something new.</p>
         <Link to="/register" className="btn btn-primary home-cta">Create Your Account — It's Free</Link>
       </section>
 
-      {/* Footer */}
       <footer className="home-footer">
         <p>SkillBank — Trade Skills, Grow Together.</p>
       </footer>

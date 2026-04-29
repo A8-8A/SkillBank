@@ -26,7 +26,8 @@ export default function Skills() {
       } else if (selectedCategory) {
         client.get(`/skills/category/${selectedCategory}`).then(r => setBrowseSkills(r.data))
       } else {
-        setBrowseSkills([])
+        // Load all skills when no filter is set
+        client.get('/skills/all').then(r => setBrowseSkills(r.data)).catch(() => setBrowseSkills([]))
       }
     }
   }, [tab, searchQuery, selectedCategory])
@@ -144,14 +145,14 @@ export default function Skills() {
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setSelectedCategory('') }}
             />
-            <span>or browse by category:</span>
+            <span>or filter by category:</span>
             <select value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setSearchQuery('') }}>
               <option value="">All categories</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           {browseSkills.length === 0 ? (
-            <p className="muted">Search for a skill or pick a category above.</p>
+            <p className="muted">No skills found.</p>
           ) : (
             <div className="skill-grid">
               {browseSkills.map(s => (

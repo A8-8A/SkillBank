@@ -16,10 +16,16 @@ import java.util.List;
 public class SkillController {
 
     private final SkillService skillService;
+    private final SkillRepository skillRepository;
 
     @GetMapping("/categories")
     public ResponseEntity<List<SkillCategory>> getCategories() {
         return ResponseEntity.ok(skillService.getAllCategories());
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Skill>> getAllSkills() {
+        return ResponseEntity.ok(skillRepository.findAll());
     }
 
     @GetMapping("/category/{categoryId}")
