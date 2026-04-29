@@ -21,11 +21,16 @@ public class EmailService {
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
+    @Value("${spring.mail.username:}")
+    private String fromAddress;
+
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("EEEE, MMM d yyyy 'at' h:mm a");
 
-    // NOT @Async — verification must be synchronous so errors bubble up
+    // ── CRITICAL EMAILS (synchronous — no @Async) ──────────────────────
+
     public void sendVerificationEmail(String to, String name, String token) {
+        log.info("Attempting verification email → {} | appUrl={}", to, appUrl);
         send(to, "Verify your SkillBank email",
             """
             Hi %s,
@@ -40,8 +45,8 @@ public class EmailService {
             """.formatted(name, appUrl, token));
     }
 
-    // NOT @Async — password reset should also be reliable
     public void sendPasswordResetEmail(String to, String name, String token) {
+        log.info("Attempting password reset email → {}", to);
         send(to, "Reset your SkillBank password",
             """
             Hi %s,
@@ -55,6 +60,8 @@ public class EmailService {
             — SkillBank
             """.formatted(name, appUrl, token));
     }
+
+    // ── NOTIFICATION EMAILS (async — fire and forget) ──────────────────
 
     @Async
     public void sendSessionReminder(Session session) {
@@ -205,16 +212,22 @@ public class EmailService {
                 session.getTeacher().getName(), session.getScheduledAt().format(FMT)));
     }
 
+    // ── CORE SEND METHOD ───────────────────────────────────────────────
+
     private void send(String to, String subject, String body) {
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
+            if (fromAddress != null && !fromAddress.isBlank()) {
+                msg.setFrom(fromAddress);
+            }
             msg.setTo(to);
             msg.setSubject(subject);
             msg.setText(body);
             mailSender.send(msg);
             log.info("Email sent → {} | {}", to, subject);
         } catch (Exception e) {
-            log.error("Email failed → {} | {} | {}", to, subject, e.getMessage());
+            log.error("EMAIL FAILED → to={} | subject={} | error={}", to, subject, e.getMessage());
+            log.error("Full email error stack trace:", e);
         }
     }
 }
