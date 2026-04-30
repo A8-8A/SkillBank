@@ -102,7 +102,7 @@ export default function Wallet() {
               </div>
               <div className="wallet-step">
                 <div className="step-number">2</div>
-                <p>Pay via OMT, Wish Money, or bank transfer</p>
+                <p>Pay via OMT, Whish Money, or bank transfer</p>
               </div>
               <div className="wallet-step">
                 <div className="step-number">3</div>
@@ -165,7 +165,7 @@ export default function Wallet() {
               </div>
               <div className="wallet-step">
                 <div className="step-number">3</div>
-                <p>Receive $50 via OMT, Wish Money, or bank transfer within 24 hours</p>
+                <p>Receive $50 via OMT, Whish Money, or bank transfer within 24 hours</p>
               </div>
             </div>
           </div>
