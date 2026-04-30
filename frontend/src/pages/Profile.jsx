@@ -161,9 +161,11 @@ export default function Profile() {
               onClick={() => isOwn && fileInputRef.current?.click()}
               style={{
                 cursor: isOwn ? 'pointer' : 'default',
-                backgroundImage: profile.profilePicUrl ? `url(${profile.profilePicUrl})` : 'none',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                ...(profile.profilePicUrl ? {
+                  backgroundImage: `url(${profile.profilePicUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                } : {}),
                 position: 'relative'
               }}
             >
