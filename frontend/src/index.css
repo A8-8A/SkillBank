@@ -870,13 +870,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .home-flow-step {
   flex: 1; max-width: 180px; text-align: center;
   padding: 1.25rem 0.75rem; position: relative;
-  opacity: 0.4; transition: opacity .4s ease;
-}
-.home-flow-step.home-flow-active {
-  opacity: 1;
-}
-.home-flow-step.home-flow-done {
-  opacity: 0.7;
+  transition: color .4s ease;
 }
 .home-flow-icon {
   width: 44px; height: 44px; border-radius: 50%;
@@ -896,12 +890,23 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
   color: var(--color-primary, #2d6a4f);
 }
 .home-flow-connector {
-  position: absolute; top: 34px; right: -50%; width: 100%; height: 2px;
-  background: var(--border); z-index: 1;
+  position: absolute; top: 34px; left: calc(50% + 22px);
+  width: calc(100% - 44px); height: 2px;
+  background: var(--border); z-index: 0;
 }
 .home-flow-step:last-child .home-flow-connector { display: none; }
-.home-flow-step h4 { font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text); }
-.home-flow-step p { font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+.home-flow-step h4 {
+  font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text);
+  opacity: 0.45; transition: opacity .4s ease;
+}
+.home-flow-step p {
+  font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4;
+  opacity: 0.45; transition: opacity .4s ease;
+}
+.home-flow-active h4,
+.home-flow-active p { opacity: 1; }
+.home-flow-done h4,
+.home-flow-done p { opacity: 0.7; }
 
 /* ── Credit Cycle ─────────────────────────────────────────────────── */
 .home-credit-cycle {
