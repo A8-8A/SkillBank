@@ -21,13 +21,16 @@ public class EmailService {
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
-    @Value("${resend.api-key:}")
+    @Value("${brevo.api-key:}")
     private String apiKey;
 
-    @Value("${resend.from:onboarding@resend.dev}")
-    private String fromAddress;
+    @Value("${brevo.from.email:mhmdazan313199@gmail.com}")
+    private String fromEmail;
 
-    private static final String RESEND_URL = "https://api.resend.com/emails";
+    @Value("${brevo.from.name:SkillBank}")
+    private String fromName;
+
+    private static final String BREVO_URL = "https://api.brevo.com/v3/smtp/email";
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("EEEE, MMM d yyyy 'at' h:mm a");
 
@@ -222,17 +225,17 @@ public class EmailService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiKey);
+            headers.set("api-key", apiKey);
 
             Map<String, Object> payload = Map.of(
-                "from", fromAddress,
-                "to", List.of(to),
+                "sender", Map.of("name", fromName, "email", fromEmail),
+                "to", List.of(Map.of("email", to)),
                 "subject", subject,
-                "text", body
+                "textContent", body
             );
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(RESEND_URL, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(BREVO_URL, request, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("Email sent → {} | {}", to, subject);
