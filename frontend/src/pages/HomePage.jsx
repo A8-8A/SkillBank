@@ -67,7 +67,7 @@ export default function HomePage() {
 
       <section className="home-hero">
         <div className="home-hero-bg">
-          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1800&q=80" alt="People collaborating" />
+          <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=85" alt="People learning together" />
           <div className="home-hero-overlay" />
         </div>
         <div className="home-hero-content">
