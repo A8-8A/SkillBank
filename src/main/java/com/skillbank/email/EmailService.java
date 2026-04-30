@@ -1,29 +1,33 @@
 package com.skillbank.email;
 
 import com.skillbank.session.Session;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
-    @Value("${spring.mail.username:}")
+    @Value("${resend.api-key:}")
+    private String apiKey;
+
+    @Value("${resend.from:onboarding@resend.dev}")
     private String fromAddress;
 
+    private static final String RESEND_URL = "https://api.resend.com/emails";
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("EEEE, MMM d yyyy 'at' h:mm a");
 
@@ -216,18 +220,28 @@ public class EmailService {
 
     private void send(String to, String subject, String body) {
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            if (fromAddress != null && !fromAddress.isBlank()) {
-                msg.setFrom(fromAddress);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            Map<String, Object> payload = Map.of(
+                "from", fromAddress,
+                "to", List.of(to),
+                "subject", subject,
+                "text", body
+            );
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(RESEND_URL, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent → {} | {}", to, subject);
+            } else {
+                log.error("EMAIL FAILED → to={} | subject={} | status={} | body={}",
+                    to, subject, response.getStatusCode(), response.getBody());
             }
-            msg.setTo(to);
-            msg.setSubject(subject);
-            msg.setText(body);
-            mailSender.send(msg);
-            log.info("Email sent → {} | {}", to, subject);
         } catch (Exception e) {
             log.error("EMAIL FAILED → to={} | subject={} | error={}", to, subject, e.getMessage());
-            log.error("Full email error stack trace:", e);
         }
     }
 }
