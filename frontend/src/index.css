@@ -669,15 +669,10 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 
 .home-hero { position: relative; min-height: 85vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .home-hero-bg { position: absolute; inset: 0; }
-.home-hero-bg img {
-  width: 100%; height: 100%; object-fit: cover; object-position: center 42%;
-  filter: saturate(1.06) contrast(1.04);
-}
+.home-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
 .home-hero-overlay {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(circle at center, rgba(27,67,50,.38) 0%, rgba(27,67,50,.58) 48%, rgba(17,42,31,.78) 100%),
-    linear-gradient(180deg, rgba(17,42,31,.46) 0%, rgba(17,42,31,.72) 100%);
+  background: linear-gradient(180deg, rgba(27,67,50,.75) 0%, rgba(27,67,50,.85) 100%);
 }
 .home-hero-content { position: relative; z-index: 1; text-align: center; padding: 2rem; max-width: 700px; }
 .home-hero-title {
@@ -875,43 +870,38 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .home-flow-step {
   flex: 1; max-width: 180px; text-align: center;
   padding: 1.25rem 0.75rem; position: relative;
-  transition: color .4s ease;
+  opacity: 0.4; transition: all .4s ease;
+}
+.home-flow-step.home-flow-active {
+  opacity: 1;
+}
+.home-flow-step.home-flow-done {
+  opacity: 0.7;
 }
 .home-flow-icon {
   width: 44px; height: 44px; border-radius: 50%;
-  background: var(--surface); border: 2px solid var(--border);
+  background: var(--surface-2); border: 2px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; font-weight: 700; color: var(--muted);
   margin: 0 auto 0.75rem; transition: all .4s ease;
-  position: relative; z-index: 2;
+  position: relative; z-index: 1;
 }
 .home-flow-active .home-flow-icon {
   background: var(--color-primary, #2d6a4f); border-color: var(--color-primary, #2d6a4f);
   color: white; box-shadow: 0 4px 16px rgba(45,106,79,.3);
-  transform: scale(1.12);
+  transform: scale(1.15);
 }
 .home-flow-done .home-flow-icon {
-  background: #dbeadd; border-color: var(--color-primary, #2d6a4f);
+  background: rgba(45,106,79,.15); border-color: var(--color-primary, #2d6a4f);
   color: var(--color-primary, #2d6a4f);
 }
 .home-flow-connector {
-  position: absolute; top: 34px; left: calc(50% + 22px);
-  width: calc(100% - 44px); height: 2px;
+  position: absolute; top: 42px; left: 50%; width: 100%; height: 2px;
   background: var(--border); z-index: 0;
 }
 .home-flow-step:last-child .home-flow-connector { display: none; }
-.home-flow-step h4 {
-  font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text);
-  opacity: 0.45; transition: opacity .4s ease;
-}
-.home-flow-step p {
-  font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4;
-  opacity: 0.45; transition: opacity .4s ease;
-}
-.home-flow-active h4,
-.home-flow-active p { opacity: 1; }
-.home-flow-done h4,
-.home-flow-done p { opacity: 0.7; }
+.home-flow-step h4 { font-size: 0.85rem; margin: 0 0 0.25rem; color: var(--text); }
+.home-flow-step p { font-size: 0.75rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
 
 /* ── Credit Cycle ─────────────────────────────────────────────────── */
 .home-credit-cycle {
