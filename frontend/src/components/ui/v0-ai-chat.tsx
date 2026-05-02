@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { Textarea } from "./textarea";
+import { cn } from "../../lib/utils";
 import {
     ImageIcon,
     FileUp,
