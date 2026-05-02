@@ -11,6 +11,10 @@ export default function Sessions() {
   const [error, setError] = useState('')
   const reqId = useRef(0)
 
+  const handleSessionUpdate = (updated) => {
+    setSessions(prev => prev.map(s => s.id === updated.id ? updated : s))
+  }
+
   const load = (currentTab) => {
     const id = ++reqId.current
     setLoading(true)
@@ -64,7 +68,7 @@ export default function Sessions() {
           >
             {sessions.map(s => (
               <motion.div key={s.id} variants={cardVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                <SessionCard session={s} onRefresh={() => load(tab)} />
+                <SessionCard session={s} onRefresh={() => load(tab)} onUpdate={handleSessionUpdate} />
               </motion.div>
             ))}
           </motion.div>

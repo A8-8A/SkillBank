@@ -28,7 +28,7 @@ function buildGoogleCalUrl(session) {
   return `https://calendar.google.com/calendar/event?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`
 }
 
-export default function SessionCard({ session, onRefresh }) {
+export default function SessionCard({ session, onRefresh, onUpdate }) {
   const { user } = useAuth()
   // Use server-provided role when available; fall back to ID comparison
   const isTeacher = session.role
@@ -55,13 +55,13 @@ export default function SessionCard({ session, onRefresh }) {
   }, [session.id, session.status])
 
   const confirm = async () => {
-    await client.post(`/sessions/${session.id}/confirm`)
-    onRefresh()
+    const { data } = await client.post(`/sessions/${session.id}/confirm`)
+    onUpdate ? onUpdate(data) : onRefresh()
   }
 
   const cancel = async () => {
-    await client.post(`/sessions/${session.id}/cancel`)
-    onRefresh()
+    const { data } = await client.post(`/sessions/${session.id}/cancel`)
+    onUpdate ? onUpdate(data) : onRefresh()
   }
 
   const fileDispute = async () => {
