@@ -15,6 +15,10 @@ export default function Sessions() {
     setSessions(prev => prev.map(s => s.id === updated.id ? updated : s))
   }
 
+  const handleSessionRemove = (id) => {
+    setSessions(prev => prev.filter(s => s.id !== id))
+  }
+
   // Detect sessions whose time windows overlap with another active session
   const overlappingIds = new Set()
   const active = sessions.filter(s => s.status === 'PENDING' || s.status === 'CONFIRMED')
@@ -83,7 +87,7 @@ export default function Sessions() {
           >
             {sessions.map(s => (
               <motion.div key={s.id} variants={cardVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                <SessionCard session={s} onRefresh={() => load(tab)} onUpdate={handleSessionUpdate} hasOverlap={overlappingIds.has(s.id)} />
+                <SessionCard session={s} onRefresh={() => load(tab)} onUpdate={handleSessionUpdate} onRemove={handleSessionRemove} hasOverlap={overlappingIds.has(s.id)} />
               </motion.div>
             ))}
           </motion.div>

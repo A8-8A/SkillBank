@@ -28,7 +28,7 @@ function buildGoogleCalUrl(session) {
   return `https://calendar.google.com/calendar/event?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`
 }
 
-export default function SessionCard({ session, onRefresh, onUpdate, hasOverlap }) {
+export default function SessionCard({ session, onRefresh, onUpdate, onRemove, hasOverlap }) {
   const { user } = useAuth()
   // Use server-provided role when available; fall back to ID comparison
   const isTeacher = session.role
@@ -89,7 +89,11 @@ export default function SessionCard({ session, onRefresh, onUpdate, hasOverlap }
         <div className="session-overlap-warning">
           <span>⚠ Overlaps with another session</span>
           {isTeacher && (
-            <button className="btn btn-danger btn-sm" onClick={cancel}>Remove</button>
+            <button className="btn btn-danger btn-sm" onClick={async () => {
+              if (onRemove) onRemove(session.id)
+              try { await client.post(`/sessions/${session.id}/cancel`) }
+              catch { onRefresh() }
+            }}>Remove</button>
           )}
         </div>
       )}
