@@ -87,7 +87,10 @@ export default function SessionCard({ session, onRefresh, onUpdate, hasOverlap }
     <div className="card session-card">
       {hasOverlap && (
         <div className="session-overlap-warning">
-          ⚠ This session overlaps with another booked session
+          <span>⚠ Overlaps with another session</span>
+          {isTeacher && (
+            <button className="btn btn-danger btn-sm" onClick={cancel}>Remove</button>
+          )}
         </div>
       )}
       <div className="session-header">

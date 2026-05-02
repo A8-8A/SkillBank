@@ -104,10 +104,10 @@ public class SessionService {
         Session session = getSession(sessionId);
 
         if (!session.getTeacher().getId().equals(teacher.getId())) {
-            throw new IllegalStateException("Only the teacher can reject this session");
+            throw new IllegalStateException("Only the teacher can cancel this session");
         }
-        if (session.getStatus() != SessionStatus.PENDING) {
-            throw new IllegalStateException("Only PENDING sessions can be cancelled");
+        if (session.getStatus() != SessionStatus.PENDING && session.getStatus() != SessionStatus.CONFIRMED) {
+            throw new IllegalStateException("Only PENDING or CONFIRMED sessions can be cancelled");
         }
 
         session.setStatus(SessionStatus.CANCELLED);

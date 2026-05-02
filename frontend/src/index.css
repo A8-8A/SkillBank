@@ -271,7 +271,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .session-row    { display:flex; gap:.75rem; font-size:.875rem; }
 .session-row .label { color:var(--muted); min-width:72px; flex-shrink:0; font-weight:500; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
 .session-actions { display:flex; gap:.5rem; padding-top:.75rem; border-top:1px solid var(--border-light); padding-left:.5rem; }
-.session-overlap-warning { background:#fef3cd; color:#7a5c14; border:1px solid #f0d060; border-radius:var(--radius-sm); padding:.4rem .75rem; font-size:.8rem; font-weight:600; margin-bottom:.25rem; }
+.session-overlap-warning { display:flex; align-items:center; justify-content:space-between; gap:.75rem; background:#fef3cd; color:#7a5c14; border:1px solid #f0d060; border-radius:var(--radius-sm); padding:.4rem .75rem; font-size:.8rem; font-weight:600; margin-bottom:.25rem; }
 
 /* ─── Skills ─────────────────────────────────────────────────────────────── */
 .skills-columns { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
