@@ -42,7 +42,7 @@ export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <h2>{reviewLabel}</h2>
-        <p className="muted">Session: {session.skillName} with {otherPerson}</p>
+        <p className="muted">Session: {session.skillName ?? session.skill?.name} with {otherPerson}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 

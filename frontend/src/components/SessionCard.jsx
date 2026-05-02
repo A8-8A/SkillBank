@@ -12,21 +12,31 @@ const STATUS_LABELS = {
   REFUNDED: 'Refunded',
 }
 
+function getSkillName(session) {
+  return session.skillName ?? session.skill?.name ?? ''
+}
+
 function buildGoogleCalUrl(session) {
+  const skill = getSkillName(session)
   const start = new Date(session.scheduledAt)
   const end = new Date(start.getTime() + session.durationMinutes * 60000)
   const fmt = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-  const title = encodeURIComponent(`SkillBank: ${session.skillName}`)
+  const title = encodeURIComponent(`SkillBank: ${skill}`)
   const details = encodeURIComponent(
-    `Skill: ${session.skillName}\nTeacher: ${session.teacher?.name}\nLearner: ${session.learner?.name}${session.notes ? '\nNotes: ' + session.notes : ''}`
+    `Skill: ${skill}\nTeacher: ${session.teacher?.name}\nLearner: ${session.learner?.name}${session.notes ? '\nNotes: ' + session.notes : ''}`
   )
   return `https://calendar.google.com/calendar/event?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`
 }
 
 export default function SessionCard({ session, onRefresh }) {
   const { user } = useAuth()
-  const isTeacher = session.role === 'TEACHER'
-  const isLearner = session.role === 'LEARNER'
+  // Use server-provided role when available; fall back to ID comparison
+  const isTeacher = session.role
+    ? session.role === 'TEACHER'
+    : String(session.teacher?.id) === String(user?.userId)
+  const isLearner = session.role
+    ? session.role === 'LEARNER'
+    : String(session.learner?.id) === String(user?.userId)
 
   const scheduledAt = new Date(session.scheduledAt)
   const endTime = new Date(scheduledAt.getTime() + session.durationMinutes * 60000)
@@ -67,7 +77,7 @@ export default function SessionCard({ session, onRefresh }) {
         <span className={`badge badge-${session.status.toLowerCase()}`}>
           {STATUS_LABELS[session.status]}
         </span>
-        <span className="session-skill">{session.skillName}</span>
+        <span className="session-skill">{getSkillName(session)}</span>
       </div>
       <div className="session-body">
         <div className="session-row">

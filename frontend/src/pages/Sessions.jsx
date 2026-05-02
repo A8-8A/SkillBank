@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import client from '../api/client'
 import SessionCard from '../components/SessionCard'
@@ -9,20 +9,23 @@ export default function Sessions() {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const reqId = useRef(0)
 
-  const load = () => {
+  const load = (currentTab) => {
+    const id = ++reqId.current
     setLoading(true)
     setError('')
-    const endpoint = tab === 'teaching' ? '/sessions/teaching'
-      : tab === 'learning' ? '/sessions/learning'
+    setSessions([])
+    const endpoint = currentTab === 'teaching' ? '/sessions/teaching'
+      : currentTab === 'learning' ? '/sessions/learning'
       : '/sessions'
     client.get(endpoint)
-      .then(r => setSessions(r.data))
-      .catch(() => setError('Failed to load sessions. Please try again.'))
-      .finally(() => setLoading(false))
+      .then(r => { if (id === reqId.current) setSessions(r.data) })
+      .catch(() => { if (id === reqId.current) setError('Failed to load sessions. Please try again.') })
+      .finally(() => { if (id === reqId.current) setLoading(false) })
   }
 
-  useEffect(() => { load() }, [tab])
+  useEffect(() => { load(tab) }, [tab])
 
   return (
     <div className="page">
@@ -39,7 +42,7 @@ export default function Sessions() {
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div key="loading" className="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-        ) : sessions.length === 0 ? (
+        ) : sessions.length === 0 && !error ? (
           <motion.div
             key="empty"
             className="empty-state"
@@ -50,7 +53,7 @@ export default function Sessions() {
           >
             <p>No sessions found.</p>
           </motion.div>
-        ) : (
+        ) : sessions.length > 0 ? (
           <motion.div
             key={tab}
             className="sessions-grid"
@@ -61,11 +64,11 @@ export default function Sessions() {
           >
             {sessions.map(s => (
               <motion.div key={s.id} variants={cardVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                <SessionCard session={s} onRefresh={load} />
+                <SessionCard session={s} onRefresh={() => load(tab)} />
               </motion.div>
             ))}
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   )
