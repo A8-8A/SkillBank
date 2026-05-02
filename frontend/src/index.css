@@ -832,7 +832,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .completion-bar-fill {
   height: 100%; border-radius: 99px;
   background: linear-gradient(90deg, #2d6a4f, #94bb66);
-  transition: width .5s ease;
 }
 .completion-hints { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
 .completion-hint {

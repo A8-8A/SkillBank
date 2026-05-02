@@ -119,7 +119,7 @@ export default function UserDashboard() {
               className="completion-bar-fill"
               initial={{ width: 0 }}
               animate={{ width: `${completion}%` }}
-              transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.9, delay: 0.2, ease: [0.33, 1, 0.68, 1] }}
             />
           </div>
           <div className="completion-hints">
