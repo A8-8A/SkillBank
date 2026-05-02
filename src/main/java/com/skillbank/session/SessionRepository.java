@@ -47,6 +47,16 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     @Query("""
         SELECT s FROM Session s
+        WHERE s.learner.id = :learnerId
+          AND s.status IN ('PENDING', 'CONFIRMED')
+          AND s.scheduledAt > :now
+        """)
+    List<Session> findActiveSessionsByLearnerId(
+            @Param("learnerId") Long learnerId,
+            @Param("now") LocalDateTime now);
+
+    @Query("""
+        SELECT s FROM Session s
         WHERE s.status = 'CONFIRMED'
           AND s.reminderSent = false
           AND s.scheduledAt BETWEEN :now AND :cutoff

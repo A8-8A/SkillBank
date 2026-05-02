@@ -40,19 +40,23 @@ public class SessionService {
         Skill skill = skillRepo.findById(request.getSkillId())
                 .orElseThrow(() -> new EntityNotFoundException("Skill not found"));
 
-        // Check if this time slot already has an active session for this teacher
-        List<Session> activeSessions = sessionRepo.findActiveSessionsByTeacherId(
-                teacher.getId(), LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime requestedStart = request.getScheduledAt();
+        int requestedDuration = request.getDurationMinutes();
 
-        for (Session existing : activeSessions) {
-            LocalDateTime existingStart = existing.getScheduledAt();
-            LocalDateTime existingEnd = existing.getEndTime();
-            LocalDateTime requestedStart = request.getScheduledAt();
-            LocalDateTime requestedEnd = requestedStart.plusMinutes(request.getDurationMinutes());
+        // Check teacher has no overlapping session
+        for (Session existing : sessionRepo.findActiveSessionsByTeacherId(teacher.getId(), now)) {
+            if (overlaps(requestedStart, requestedDuration, existing.getScheduledAt(), existing.getDurationMinutes())) {
+                throw new IllegalStateException(
+                    "The teacher already has a session booked at this time. Please choose a different time.");
+            }
+        }
 
-            // Check for time overlap
-            if (requestedStart.isBefore(existingEnd) && requestedEnd.isAfter(existingStart)) {
-                throw new IllegalStateException("This time slot is already booked. Please choose a different time.");
+        // Check learner has no overlapping session (prevents same person booking two sessions at once)
+        for (Session existing : sessionRepo.findActiveSessionsByLearnerId(learner.getId(), now)) {
+            if (overlaps(requestedStart, requestedDuration, existing.getScheduledAt(), existing.getDurationMinutes())) {
+                throw new IllegalStateException(
+                    "You already have a session booked at this time. Please choose a different time.");
             }
         }
 
@@ -70,6 +74,12 @@ public class SessionService {
         escrowService.holdEscrow(session);
         emailService.notifyTeacherOfNewBooking(session);
         return session;
+    }
+
+    private boolean overlaps(LocalDateTime start1, int duration1, LocalDateTime start2, int duration2) {
+        LocalDateTime end1 = start1.plusMinutes(duration1);
+        LocalDateTime end2 = start2.plusMinutes(duration2);
+        return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
     @Transactional
