@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import client from '../api/client'
+import { fadeUp, stagger, cardVariant } from '../lib/motionVariants'
 
 export default function Matches() {
   const [tab, setTab] = useState('all')
@@ -44,10 +46,12 @@ export default function Matches() {
 
   return (
     <div className="page">
-      <h1>Matches</h1>
-      <p className="muted">Find people to exchange skills with. Click "View Profile" to see their availability and book a session.</p>
+      <motion.h1 {...fadeUp(0)}>Matches</motion.h1>
+      <motion.p className="muted" {...fadeUp(0.08)}>
+        Find people to exchange skills with. Click "View Profile" to see their availability and book a session.
+      </motion.p>
 
-      <div className="tabs">
+      <motion.div className="tabs" {...fadeUp(0.12)}>
         <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
           All Users
         </button>
@@ -57,41 +61,76 @@ export default function Matches() {
         <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>
           Mutual
         </button>
-      </div>
+      </motion.div>
 
-      {tab === 'all' && (
-        <form onSubmit={handleSearch} className="search-bar-wrapper">
-          <input
-            type="text"
-            placeholder="Search by name, skill, category, or tag..."
-            value={searchQuery}
-            onChange={e => handleSearchChange(e.target.value)}
-            className="search-bar-input"
-          />
-        </form>
-      )}
+      <AnimatePresence>
+        {tab === 'all' && (
+          <motion.form
+            onSubmit={handleSearch}
+            className="search-bar-wrapper"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <input
+              type="text"
+              placeholder="Search by name, skill, category, or tag..."
+              value={searchQuery}
+              onChange={e => handleSearchChange(e.target.value)}
+              className="search-bar-input"
+            />
+          </motion.form>
+        )}
+      </AnimatePresence>
 
-      {loading ? <div className="loading" />
-        : matches.length === 0 ? (
-          <div className="empty-state">
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.div key="loading" className="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
+        ) : matches.length === 0 ? (
+          <motion.div
+            key="empty"
+            className="empty-state"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <p>{
               tab === 'all'       ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
               tab === 'one-way'   ? 'No one found teaching what you want to learn yet.' :
                                     'No mutual matches yet. Add more skills you offer and seek.'
             }</p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="matches-grid">
+          <motion.div
+            key={tab + searchQuery}
+            className="matches-grid"
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+          >
             {matches.map(m => (
-              <div key={m.userId} className="card match-card">
+              <motion.div
+                key={m.userId}
+                className="card match-card"
+                variants={cardVariant}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              >
                 <div className="match-header">
                   <div>
                     <h3>{m.name}</h3>
                     {m.city && <span className="muted">{m.city}</span>}
                   </div>
-                  <button className="btn btn-primary btn-sm" onClick={() => navigate(`/user/${m.userId}`)}>
+                  <motion.button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => navigate(`/user/${m.userId}`)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     View Profile
-                  </button>
+                  </motion.button>
                 </div>
                 {m.bio && <p className="match-bio">{m.bio}</p>}
                 <div className="match-skills">
@@ -115,10 +154,11 @@ export default function Matches() {
                     <p className="muted" style={{ fontSize: '0.85rem' }}>No skills listed yet</p>
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
     </div>
   )
 }

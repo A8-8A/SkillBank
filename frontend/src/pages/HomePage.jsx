@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import Marquee from '../components/Marquee'
 
 const ROTATING_WORDS = ['Guitar', 'Cooking', 'Python', 'Photography', 'Design', 'French', 'Chess', 'Yoga']
 
@@ -107,6 +108,31 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Stats Strip */}
+      <div className="home-stats-strip">
+        {[
+          { num: '500+', label: 'Registered Users' },
+          { num: '1,000+', label: 'Sessions Hosted' },
+          { num: '20+', label: 'Skill Categories' },
+          { num: '$50', label: 'Per 5 Credits Cash Out' },
+        ].map((s, i) => (
+          <motion.div
+            key={i}
+            className="home-stat-item"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="home-stat-num">{s.num}</div>
+            <div className="home-stat-label">{s.label}</div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Marquee */}
+      <Marquee />
 
       {/* Flow */}
       <section className="home-section">
