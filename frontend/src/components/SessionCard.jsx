@@ -55,13 +55,25 @@ export default function SessionCard({ session, onRefresh, onUpdate }) {
   }, [session.id, session.status])
 
   const confirm = async () => {
-    const { data } = await client.post(`/sessions/${session.id}/confirm`)
-    onUpdate ? onUpdate(data) : onRefresh()
+    if (onUpdate) onUpdate({ ...session, status: 'CONFIRMED' })
+    try {
+      const { data } = await client.post(`/sessions/${session.id}/confirm`)
+      if (onUpdate) onUpdate(data)
+    } catch {
+      if (onUpdate) onUpdate(session)
+      else onRefresh()
+    }
   }
 
   const cancel = async () => {
-    const { data } = await client.post(`/sessions/${session.id}/cancel`)
-    onUpdate ? onUpdate(data) : onRefresh()
+    if (onUpdate) onUpdate({ ...session, status: 'CANCELLED' })
+    try {
+      const { data } = await client.post(`/sessions/${session.id}/cancel`)
+      if (onUpdate) onUpdate(data)
+    } catch {
+      if (onUpdate) onUpdate(session)
+      else onRefresh()
+    }
   }
 
   const fileDispute = async () => {
