@@ -16,17 +16,17 @@ function buildGoogleCalUrl(session) {
   const start = new Date(session.scheduledAt)
   const end = new Date(start.getTime() + session.durationMinutes * 60000)
   const fmt = d => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
-  const title = encodeURIComponent(`SkillBank: ${session.skill?.name}`)
+  const title = encodeURIComponent(`SkillBank: ${session.skillName}`)
   const details = encodeURIComponent(
-    `Skill: ${session.skill?.name}\nTeacher: ${session.teacher?.name}\nLearner: ${session.learner?.name}${session.notes ? '\nNotes: ' + session.notes : ''}`
+    `Skill: ${session.skillName}\nTeacher: ${session.teacher?.name}\nLearner: ${session.learner?.name}${session.notes ? '\nNotes: ' + session.notes : ''}`
   )
   return `https://calendar.google.com/calendar/event?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`
 }
 
 export default function SessionCard({ session, onRefresh }) {
   const { user } = useAuth()
-  const isTeacher = session.teacher?.id === user?.userId
-  const isLearner = session.learner?.id === user?.userId
+  const isTeacher = session.role === 'TEACHER'
+  const isLearner = session.role === 'LEARNER'
 
   const scheduledAt = new Date(session.scheduledAt)
   const endTime = new Date(scheduledAt.getTime() + session.durationMinutes * 60000)
@@ -67,7 +67,7 @@ export default function SessionCard({ session, onRefresh }) {
         <span className={`badge badge-${session.status.toLowerCase()}`}>
           {STATUS_LABELS[session.status]}
         </span>
-        <span className="session-skill">{session.skill?.name}</span>
+        <span className="session-skill">{session.skillName}</span>
       </div>
       <div className="session-body">
         <div className="session-row">

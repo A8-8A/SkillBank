@@ -1,6 +1,7 @@
 package com.skillbank.session;
 
 import com.skillbank.session.dto.BookSessionRequest;
+import com.skillbank.session.dto.SessionDTO;
 import com.skillbank.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,43 +19,58 @@ public class SessionController {
     private final SessionService sessionService;
 
     @PostMapping
-    public ResponseEntity<Session> book(
+    public ResponseEntity<SessionDTO> book(
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody BookSessionRequest request) {
-        return ResponseEntity.ok(sessionService.book(currentUser, request));
+        Session session = sessionService.book(currentUser, request);
+        return ResponseEntity.ok(SessionDTO.from(session, currentUser.getId()));
     }
 
     @PostMapping("/{id}/confirm")
-    public ResponseEntity<Session> confirm(
+    public ResponseEntity<SessionDTO> confirm(
             @AuthenticationPrincipal User currentUser,
             @PathVariable Long id) {
-        return ResponseEntity.ok(sessionService.confirm(currentUser, id));
+        Session session = sessionService.confirm(currentUser, id);
+        return ResponseEntity.ok(SessionDTO.from(session, currentUser.getId()));
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Session> cancel(
+    public ResponseEntity<SessionDTO> cancel(
             @AuthenticationPrincipal User currentUser,
             @PathVariable Long id) {
-        return ResponseEntity.ok(sessionService.cancel(currentUser, id));
+        Session session = sessionService.cancel(currentUser, id);
+        return ResponseEntity.ok(SessionDTO.from(session, currentUser.getId()));
     }
 
     @GetMapping
-    public ResponseEntity<List<Session>> getMySessions(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(sessionService.getAllMySessions(currentUser));
+    public ResponseEntity<List<SessionDTO>> getMySessions(@AuthenticationPrincipal User currentUser) {
+        List<SessionDTO> dtos = sessionService.getAllMySessions(currentUser).stream()
+                .map(s -> SessionDTO.from(s, currentUser.getId()))
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/teaching")
-    public ResponseEntity<List<Session>> getTeachingSessions(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(sessionService.getMySessionsAsTeacher(currentUser));
+    public ResponseEntity<List<SessionDTO>> getTeachingSessions(@AuthenticationPrincipal User currentUser) {
+        List<SessionDTO> dtos = sessionService.getMySessionsAsTeacher(currentUser).stream()
+                .map(s -> SessionDTO.from(s, currentUser.getId()))
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/learning")
-    public ResponseEntity<List<Session>> getLearningSessions(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(sessionService.getMySessionsAsLearner(currentUser));
+    public ResponseEntity<List<SessionDTO>> getLearningSessions(@AuthenticationPrincipal User currentUser) {
+        List<SessionDTO> dtos = sessionService.getMySessionsAsLearner(currentUser).stream()
+                .map(s -> SessionDTO.from(s, currentUser.getId()))
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Session> getSession(@PathVariable Long id) {
-        return ResponseEntity.ok(sessionService.getSession(id));
+    public ResponseEntity<SessionDTO> getSession(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id) {
+        Session session = sessionService.getSession(id);
+        return ResponseEntity.ok(SessionDTO.from(session, currentUser.getId()));
     }
 }

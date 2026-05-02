@@ -8,14 +8,17 @@ export default function Sessions() {
   const [tab, setTab] = useState('all')
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const load = () => {
     setLoading(true)
+    setError('')
     const endpoint = tab === 'teaching' ? '/sessions/teaching'
       : tab === 'learning' ? '/sessions/learning'
       : '/sessions'
     client.get(endpoint)
       .then(r => setSessions(r.data))
+      .catch(() => setError('Failed to load sessions. Please try again.'))
       .finally(() => setLoading(false))
   }
 
@@ -30,6 +33,8 @@ export default function Sessions() {
         <button className={`tab ${tab === 'teaching' ? 'active' : ''}`} onClick={() => setTab('teaching')}>Teaching</button>
         <button className={`tab ${tab === 'learning' ? 'active' : ''}`} onClick={() => setTab('learning')}>Learning</button>
       </motion.div>
+
+      {error && <div className="alert alert-error">{error}</div>}
 
       <AnimatePresence mode="wait">
         {loading ? (
