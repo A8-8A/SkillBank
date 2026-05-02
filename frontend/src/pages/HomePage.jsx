@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import HeroOrb from '../components/HeroOrb'
 
 const ROTATING_WORDS = ['Guitar', 'Cooking', 'Python', 'Photography', 'Design', 'French', 'Chess', 'Yoga']
 
@@ -81,6 +82,7 @@ export default function HomePage() {
           <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=85" alt="People learning together" />
           <div className="home-hero-overlay" />
         </div>
+        <HeroOrb />
         <div className="home-hero-content" style={{ position: 'relative', zIndex: 2 }}>
           <motion.h1 className="home-hero-title" {...fadeUp(0.2)}>
             Trade skills.<br />
