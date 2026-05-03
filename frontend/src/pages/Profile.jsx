@@ -316,7 +316,6 @@ export default function Profile() {
 
       {isOwn && (
         <div className="card" style={{ borderColor: '#ef4444', borderWidth: '1px', borderStyle: 'solid' }}>
-          <h3 style={{ color: '#ef4444', marginBottom: '0.5rem' }}>Danger Zone</h3>
           <p className="muted" style={{ marginBottom: '1rem' }}>
             Permanently delete your account and all associated data. This cannot be undone.
           </p>
