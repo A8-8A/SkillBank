@@ -556,11 +556,10 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .home-flow-step { flex:1; max-width:180px; text-align:center; padding:1.25rem .75rem; position:relative; opacity:.3; transition:all .4s ease; }
 .home-flow-step.home-flow-active { opacity:1; }
 .home-flow-step.home-flow-done  { opacity:.6; }
-.home-flow-icon { width:44px; height:44px; border-radius:50%; background:var(--surface-2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; color:var(--muted); margin:0 auto .75rem; transition:all .4s ease; position:relative; z-index:1; }
+.home-flow-icon { width:44px; height:44px; border-radius:50%; background:var(--bg); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; color:var(--muted); margin:0 auto .75rem; transition:all .4s ease; position:relative; z-index:2; }
 .home-flow-active .home-flow-icon { background:#2d6a4f; border-color:#2d6a4f; color:white; box-shadow:0 4px 16px rgba(45,106,79,.3); transform:scale(1.15); }
 .home-flow-done   .home-flow-icon { background:rgba(45,106,79,.15); border-color:#2d6a4f; color:#2d6a4f; }
-.home-flow-connector { position:absolute; top:42px; left:calc(50% + 22px); width:calc(100% - 44px); height:2px; background:var(--border); z-index:0; }
-.home-flow-step:last-child .home-flow-connector { display:none; }
+.home-flow-line { position:absolute; top:calc(1.25rem + 22px); left:0; right:0; height:2px; background:var(--border); z-index:0; pointer-events:none; }
 .home-flow-step h4 { font-size:.85rem; margin:0 0 .25rem; color:var(--text); }
 .home-flow-step p  { font-size:.75rem; color:var(--text-secondary); margin:0; line-height:1.4; }
 
@@ -647,7 +646,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
   .home-stat-num { font-size:1.8rem; }
   .home-flow { flex-wrap:wrap; gap:.5rem; }
   .home-flow-step { max-width:140px; }
-  .home-flow-connector { display:none; }
+  .home-flow-line { display:none; }
   .home-credit-cycle { flex-direction:column; gap:.75rem; }
   .credit-arrow { transform:rotate(90deg); }
   .home-credit-extras { grid-template-columns:1fr; gap:1rem; }

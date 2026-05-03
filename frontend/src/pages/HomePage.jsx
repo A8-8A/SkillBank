@@ -112,6 +112,7 @@ export default function HomePage() {
       <section className="home-section">
         <motion.h2 className="home-section-title" {...fadeUpInView()}>Your Journey on SkillBank</motion.h2>
         <div className="home-flow">
+          <div className="home-flow-line" />
           {flowSteps.map((step, i) => (
             <motion.div
               key={i}
@@ -123,7 +124,6 @@ export default function HomePage() {
               animate={i === flowStep ? { scale: 1.05 } : { scale: 1 }}
             >
               <div className="home-flow-icon">{step.icon}</div>
-              <div className="home-flow-connector" />
               <h4>{step.label}</h4>
               <p>{step.desc}</p>
             </motion.div>
