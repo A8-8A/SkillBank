@@ -1,18 +1,25 @@
 package com.skillbank.user;
 
+import com.skillbank.availability.AvailabilityRepository;
+import com.skillbank.dispute.DisputeRepository;
 import com.skillbank.review.ReviewRepository;
 import com.skillbank.review.ReviewType;
+import com.skillbank.session.Session;
 import com.skillbank.session.SessionRepository;
 import com.skillbank.session.SessionStatus;
+import com.skillbank.skill.UserSkillRepository;
 import com.skillbank.transaction.EscrowService;
+import com.skillbank.transaction.TimeTransactionRepository;
 import com.skillbank.user.dto.UserProfileResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +30,11 @@ public class UserService {
     private final EscrowService escrowService;
     private final ReviewRepository reviewRepository;
     private final SessionRepository sessionRepository;
+    private final UserSkillRepository userSkillRepository;
+    private final AvailabilityRepository availabilityRepository;
+    private final DisputeRepository disputeRepository;
+    private final TimeTransactionRepository timeTransactionRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public UserProfileResponse getProfile(Long userId) {
@@ -49,6 +61,37 @@ public class UserService {
     @Transactional
     public void purchaseCredits(User currentUser, BigDecimal hours) {
         escrowService.purchaseCredits(currentUser, hours);
+    }
+
+    @Transactional
+    public void deleteAccount(User currentUser, String password) {
+        if (!passwordEncoder.matches(password, currentUser.getPasswordHash())) {
+            throw new IllegalArgumentException("Incorrect password");
+        }
+
+        Long userId = currentUser.getId();
+
+        // Nullify resolved_by in disputes this admin resolved (nullable column)
+        disputeRepository.nullifyResolvedBy(userId);
+
+        // Delete disputes on sessions involving this user
+        List<Session> sessions = sessionRepository.findAllByUserId(userId);
+        if (!sessions.isEmpty()) {
+            List<Long> sessionIds = sessions.stream().map(Session::getId).toList();
+            disputeRepository.deleteAll(disputeRepository.findBySessionIdIn(sessionIds));
+        }
+
+        // Nullify transaction user references (nullable columns — preserves other users' balance history)
+        timeTransactionRepository.nullifyFromUser(userId);
+        timeTransactionRepository.nullifyToUser(userId);
+
+        // Delete sessions, reviews, skills, availability
+        sessionRepository.deleteAll(sessions);
+        reviewRepository.deleteAll(reviewRepository.findAllByUserId(userId));
+        userSkillRepository.deleteAll(userSkillRepository.findByUserId(userId));
+        availabilityRepository.deleteAll(availabilityRepository.findByUserId(userId));
+
+        userRepository.delete(currentUser);
     }
 
     public User findById(Long userId) {

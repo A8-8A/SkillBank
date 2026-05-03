@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -38,6 +40,22 @@ public class UserController {
                 updates.get("phoneNumber"),
                 updates.get("profilePicUrl")
         ));
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteAccount(
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody Map<String, String> body) {
+        String password = body.get("password");
+        if (password == null || password.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password field required");
+        }
+        try {
+            userService.deleteAccount(currentUser, password);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+        }
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/me/purchase")

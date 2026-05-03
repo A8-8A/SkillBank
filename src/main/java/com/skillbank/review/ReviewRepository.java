@@ -20,4 +20,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     long countByRevieweeAndType(@Param("userId") Long userId, @Param("type") ReviewType type);
 
     List<Review> findByRevieweeIdOrderByCreatedAtDesc(Long revieweeId);
+
+    @Query("SELECT r FROM Review r WHERE r.reviewer.id = :userId OR r.reviewee.id = :userId")
+    List<Review> findAllByUserId(@Param("userId") Long userId);
 }

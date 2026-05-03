@@ -1,6 +1,7 @@
 package com.skillbank.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,4 +27,12 @@ public interface TimeTransactionRepository extends JpaRepository<TimeTransaction
     BigDecimal sumDebitsForUser(@Param("userId") Long userId);
 
     boolean existsBySessionIdAndType(Long sessionId, TransactionType type);
+
+    @Modifying
+    @Query("UPDATE TimeTransaction t SET t.fromUser = null WHERE t.fromUser.id = :userId")
+    void nullifyFromUser(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE TimeTransaction t SET t.toUser = null WHERE t.toUser.id = :userId")
+    void nullifyToUser(@Param("userId") Long userId);
 }

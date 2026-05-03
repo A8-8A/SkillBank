@@ -9,7 +9,7 @@ import AvailabilityGrid from '../components/AvailabilityGrid'
 
 export default function Profile() {
   const { userId } = useParams()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, logout } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -29,6 +29,10 @@ export default function Profile() {
   const [bookError, setBookError] = useState('')
   const [bookSuccess, setBookSuccess] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const load = () => {
     if (!targetId && !isOwn) return
@@ -147,6 +151,21 @@ export default function Profile() {
     await client.patch('/users/me', editForm)
     setEditing(false)
     load()
+  }
+
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault()
+    setDeleteError('')
+    setDeleting(true)
+    try {
+      await client.delete('/users/me', { data: { password: deletePassword } })
+      logout()
+      navigate('/')
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || err.response?.data || 'Failed to delete account')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading) return <div className="loading">Loading profile...</div>
@@ -294,6 +313,56 @@ export default function Profile() {
           />
         )}
       </div>
+
+      {isOwn && (
+        <div className="card" style={{ borderColor: '#ef4444', borderWidth: '1px', borderStyle: 'solid' }}>
+          <h3 style={{ color: '#ef4444', marginBottom: '0.5rem' }}>Danger Zone</h3>
+          <p className="muted" style={{ marginBottom: '1rem' }}>
+            Permanently delete your account and all associated data. This cannot be undone.
+          </p>
+          <button
+            className="btn"
+            style={{ background: '#ef4444', color: 'white', border: 'none' }}
+            onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError('') }}
+          >
+            Delete Account
+          </button>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: '#ef4444' }}>Delete Account</h2>
+            <p className="muted">This will permanently delete your account, sessions, reviews, and all associated data. Enter your password to confirm.</p>
+            {deleteError && <div className="alert alert-error">{deleteError}</div>}
+            <form onSubmit={handleDeleteAccount}>
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                <button
+                  type="submit"
+                  className="btn"
+                  style={{ background: '#ef4444', color: 'white', border: 'none' }}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting...' : 'Delete My Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {booking && (
         <div className="modal-overlay" onClick={() => setBooking(null)}>
