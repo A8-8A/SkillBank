@@ -14,6 +14,7 @@ import Sessions from './pages/Sessions'
 import Matches from './pages/Matches'
 import Profile from './pages/Profile'
 import Wallet from './pages/Wallet'
+import UserReviews from './pages/UserReviews'
 import AdminUsers from './pages/AdminUsers'
 import AdminSessions from './pages/AdminSessions'
 import AdminCredits from './pages/AdminCredits'
@@ -38,6 +39,7 @@ function AppInner() {
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/user/:userId" element={<Profile />} />
+        <Route path="/user/:userId/reviews" element={<UserReviews />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/sessions" element={<AdminSessions />} />
         <Route path="/admin/credits" element={<AdminCredits />} />

@@ -91,12 +91,42 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<Review> getReviewsForUser(Long userId) {
-        return reviewRepo.findByRevieweeIdOrderByCreatedAtDesc(userId);
+    public List<ReviewDTO> getReviewDTOs(Long userId) {
+        return reviewRepo.findByRevieweeIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReviewDTO> getReviewDTOsByType(Long userId, ReviewType type) {
+        return reviewRepo.findByRevieweeIdAndTypeOrderByCreatedAtDesc(userId, type).stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public boolean hasReviewed(Long sessionId, Long reviewerId) {
         return reviewRepo.existsBySessionIdAndReviewerId(sessionId, reviewerId);
+    }
+
+    private ReviewDTO toDTO(Review r) {
+        return ReviewDTO.builder()
+                .id(r.getId())
+                .type(r.getType().name())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .teacherOnTime(r.getTeacherOnTime())
+                .contentUseful(r.getContentUseful())
+                .wouldRecommend(r.getWouldRecommend())
+                .createdAt(r.getCreatedAt())
+                .reviewerId(r.getReviewer().getId())
+                .reviewerName(r.getReviewer().getName())
+                .reviewerProfilePicUrl(r.getReviewer().getProfilePicUrl())
+                .revieweeId(r.getReviewee().getId())
+                .revieweeName(r.getReviewee().getName())
+                .sessionId(r.getSession().getId())
+                .skillName(r.getSession().getSkill().getName())
+                .sessionDate(r.getSession().getScheduledAt())
+                .build();
     }
 }

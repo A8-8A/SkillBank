@@ -34,8 +34,18 @@ public class ReviewController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Long userId) {
-        return ResponseEntity.ok(reviewService.getReviewsForUser(userId));
+    public ResponseEntity<List<ReviewDTO>> getUserReviews(@PathVariable Long userId) {
+        return ResponseEntity.ok(reviewService.getReviewDTOs(userId));
+    }
+
+    @GetMapping("/user/{userId}/teaching")
+    public ResponseEntity<List<ReviewDTO>> getTeachingReviews(@PathVariable Long userId) {
+        return ResponseEntity.ok(reviewService.getReviewDTOsByType(userId, ReviewType.TEACHING));
+    }
+
+    @GetMapping("/user/{userId}/learning")
+    public ResponseEntity<List<ReviewDTO>> getLearningReviews(@PathVariable Long userId) {
+        return ResponseEntity.ok(reviewService.getReviewDTOsByType(userId, ReviewType.LEARNING));
     }
 
     @GetMapping("/stats/{userId}")

@@ -1,9 +1,16 @@
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
-function StarDisplay({ rating, count, label, sessions }) {
+function StarDisplay({ rating, count, label, sessions, onClick }) {
   const stars = Math.round(rating)
+  const isClickable = count > 0
+
   return (
-    <div className="profile-stat-block">
+    <div
+      className={`profile-stat-block ${isClickable ? 'profile-stat-clickable' : ''}`}
+      onClick={isClickable ? onClick : undefined}
+      title={isClickable ? 'Click to see all reviews' : ''}
+    >
       <div className="profile-stat-header">{label}</div>
       <div className="profile-stat-stars">
         {[1, 2, 3, 4, 5].map((s, i) => (
@@ -34,12 +41,15 @@ function StarDisplay({ rating, count, label, sessions }) {
       >
         {count > 0 ? `${count} review${count !== 1 ? 's' : ''}` : 'No reviews yet'}
         {sessions > 0 ? ` · ${sessions} session${sessions !== 1 ? 's' : ''}` : ''}
+        {isClickable && <span className="profile-stat-view"> — View all</span>}
       </motion.div>
     </div>
   )
 }
 
 export default function ProfileStats({ profile }) {
+  const navigate = useNavigate()
+
   if (!profile) return null
 
   const hasAnyData = profile.teachingReviewCount > 0 || profile.learningReviewCount > 0
@@ -61,12 +71,14 @@ export default function ProfileStats({ profile }) {
         count={profile.teachingReviewCount || 0}
         label="As a Teacher"
         sessions={profile.sessionsTaught || 0}
+        onClick={() => navigate(`/user/${profile.id}/reviews?tab=teaching`)}
       />
       <StarDisplay
         rating={profile.learningRating || 0}
         count={profile.learningReviewCount || 0}
         label="As a Learner"
         sessions={profile.sessionsLearned || 0}
+        onClick={() => navigate(`/user/${profile.id}/reviews?tab=learning`)}
       />
     </motion.div>
   )
