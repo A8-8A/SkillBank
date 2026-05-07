@@ -35,4 +35,8 @@ public interface TimeTransactionRepository extends JpaRepository<TimeTransaction
     @Modifying
     @Query("UPDATE TimeTransaction t SET t.toUser = null WHERE t.toUser.id = :userId")
     void nullifyToUser(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE TimeTransaction t SET t.session = null WHERE t.session.id IN :sessionIds")
+    void nullifySessionBySessionIdIn(@Param("sessionIds") List<Long> sessionIds);
 }

@@ -156,13 +156,22 @@ export default function Profile() {
   const handleDeleteAccount = async (e) => {
     e.preventDefault()
     setDeleteError('')
+    const confirmed = window.confirm('Are you sure you want to permanently delete your account? This cannot be undone.')
+    if (!confirmed) return
+
     setDeleting(true)
     try {
       await client.delete('/users/me', { data: { password: deletePassword } })
       logout()
       navigate('/')
     } catch (err) {
-      setDeleteError(err.response?.data?.message || err.response?.data || 'Failed to delete account')
+      const responseError = err.response?.data
+      setDeleteError(
+        responseError?.error ||
+        responseError?.message ||
+        responseError?.detail ||
+        (typeof responseError === 'string' ? responseError : 'Failed to delete account')
+      )
     } finally {
       setDeleting(false)
     }

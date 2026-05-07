@@ -1,6 +1,7 @@
 package com.skillbank.skill;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +19,8 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     @Query("SELECT s FROM Skill s JOIN s.tags t WHERE t.name = :tag")
     List<Skill> findByTag(@Param("tag") String tag);
+
+    @Modifying
+    @Query("UPDATE Skill s SET s.createdBy = null WHERE s.createdBy.id = :userId")
+    void nullifyCreatedBy(@Param("userId") Long userId);
 }

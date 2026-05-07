@@ -7,6 +7,7 @@ import com.skillbank.review.ReviewType;
 import com.skillbank.session.Session;
 import com.skillbank.session.SessionRepository;
 import com.skillbank.session.SessionStatus;
+import com.skillbank.skill.SkillRepository;
 import com.skillbank.skill.UserSkillRepository;
 import com.skillbank.transaction.EscrowService;
 import com.skillbank.transaction.TimeTransactionRepository;
@@ -34,6 +35,7 @@ public class UserService {
     private final AvailabilityRepository availabilityRepository;
     private final DisputeRepository disputeRepository;
     private final TimeTransactionRepository timeTransactionRepository;
+    private final SkillRepository skillRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -76,18 +78,22 @@ public class UserService {
 
         // Delete disputes on sessions involving this user
         List<Session> sessions = sessionRepository.findAllByUserId(userId);
-        if (!sessions.isEmpty()) {
-            List<Long> sessionIds = sessions.stream().map(Session::getId).toList();
+        List<Long> sessionIds = sessions.stream().map(Session::getId).toList();
+        if (!sessionIds.isEmpty()) {
             disputeRepository.deleteAll(disputeRepository.findBySessionIdIn(sessionIds));
         }
 
-        // Nullify transaction user references (nullable columns — preserves other users' balance history)
+        // Nullify transaction references (nullable columns preserve other users' balance history)
         timeTransactionRepository.nullifyFromUser(userId);
         timeTransactionRepository.nullifyToUser(userId);
+        skillRepository.nullifyCreatedBy(userId);
+        if (!sessionIds.isEmpty()) {
+            timeTransactionRepository.nullifySessionBySessionIdIn(sessionIds);
+        }
 
-        // Delete sessions, reviews, skills, availability
-        sessionRepository.deleteAll(sessions);
+        // Delete rows that reference this user before deleting the user row itself.
         reviewRepository.deleteAll(reviewRepository.findAllByUserId(userId));
+        sessionRepository.deleteAll(sessions);
         userSkillRepository.deleteAll(userSkillRepository.findByUserId(userId));
         availabilityRepository.deleteAll(availabilityRepository.findByUserId(userId));
 
