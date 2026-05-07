@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import client from '../api/client'
 
 export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
@@ -38,7 +39,7 @@ export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
   const otherPerson = isTeacher ? session.learner?.name : session.teacher?.name
   const reviewLabel = isTeacher ? 'Rate your learner' : 'Rate your teacher'
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <h2>{reviewLabel}</h2>
@@ -105,6 +106,7 @@ export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

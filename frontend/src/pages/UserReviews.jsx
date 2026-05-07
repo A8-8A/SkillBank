@@ -47,7 +47,6 @@ export default function UserReviews() {
 
   return (
     <div className="page">
-      {/* Header */}
       <div className="reviews-page-header">
         <div>
           <button className="btn btn-sm" onClick={() => navigate(`/user/${userId}`)}>
@@ -59,7 +58,6 @@ export default function UserReviews() {
         </div>
       </div>
 
-      {/* Summary */}
       {stats && (
         <div className="reviews-summary-row">
           <div className={`reviews-summary-card ${tab === 'teaching' ? 'reviews-summary-active' : ''}`}
@@ -89,7 +87,6 @@ export default function UserReviews() {
         </div>
       )}
 
-      {/* Reviews List */}
       {loading ? <div className="loading" /> : reviews.length === 0 ? (
         <div className="empty-state">
           <p>No {tab === 'teaching' ? 'teaching' : 'learning'} reviews yet.</p>
@@ -99,7 +96,10 @@ export default function UserReviews() {
           {reviews.map(r => (
             <div key={r.id} className="review-card card">
               <div className="review-card-header">
-                <div className="review-card-left">
+                <div
+                  className="review-card-left review-card-link"
+                  onClick={() => navigate(`/user/${r.reviewerId}`)}
+                >
                   <div
                     className="review-avatar"
                     style={{
@@ -122,27 +122,17 @@ export default function UserReviews() {
                 </div>
               </div>
 
-              {/* Feedback badges */}
               <div className="review-feedback-row">
                 <FeedbackBadge label="On time" value={r.teacherOnTime} />
                 <FeedbackBadge label="Content useful" value={r.contentUseful} />
                 <FeedbackBadge label="Would recommend" value={r.wouldRecommend} />
               </div>
 
-              {/* Comment */}
               {r.comment && (
                 <div className="review-comment">
                   "{r.comment}"
                 </div>
               )}
-
-              {/* View reviewer profile */}
-              <button
-                className="btn btn-sm review-view-profile"
-                onClick={() => navigate(`/user/${r.reviewerId}`)}
-              >
-                View {r.reviewerName}'s Profile
-              </button>
             </div>
           ))}
         </div>

@@ -723,3 +723,9 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
   .reviews-summary-row { grid-template-columns: 1fr; }
   .review-card-header { flex-direction: column; gap: 0.5rem; }
 }
+/* ── Clickable Reviewer in Reviews Page ────────────────────────────── */
+.review-card-link { cursor: pointer; transition: opacity .15s ease; }
+.review-card-link:hover { opacity: 0.75; }
+.review-card-link .review-reviewer-name { color: var(--color-primary, #2d6a4f); }
+.review-card-link .review-avatar { transition: transform .15s ease; }
+.review-card-link:hover .review-avatar { transform: scale(1.08); }
