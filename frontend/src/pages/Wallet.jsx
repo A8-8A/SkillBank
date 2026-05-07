@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { motion, AnimatePresence, useInView } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
 import { fadeUp, stagger, cardVariant } from '../lib/motionVariants'
@@ -9,11 +9,9 @@ const WHATSAPP_NUMBER = '96176860746'
 
 function useCountUp(target, duration = 1000) {
   const [value, setValue] = useState(0)
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
 
   useEffect(() => {
-    if (!inView || target == null) return
+    if (target == null) return
     let start = 0
     const step = target / (duration / 16)
     const timer = setInterval(() => {
@@ -22,9 +20,14 @@ function useCountUp(target, duration = 1000) {
       if (start >= target) clearInterval(timer)
     }, 16)
     return () => clearInterval(timer)
-  }, [inView, target, duration])
+  }, [target, duration])
 
-  return { value, ref }
+  return value
+}
+
+function parseBalance(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
 }
 
 export default function Wallet() {
@@ -39,13 +42,10 @@ export default function Wallet() {
 
     const loadWallet = async () => {
       try {
-        const [profileRes, balanceRes] = await Promise.all([
-          client.get('/users/me'),
-          client.get('/transactions/balance'),
-        ])
+        const { data } = await client.get('/users/me')
 
         if (!active) return
-        setBalance(Number(balanceRes.data.balance ?? profileRes.data.balance ?? 0))
+        setBalance(parseBalance(data.balance))
       } finally {
         if (active) setLoading(false)
       }
@@ -53,8 +53,8 @@ export default function Wallet() {
 
     const refreshBalance = async () => {
       try {
-        const { data } = await client.get('/transactions/balance')
-        if (active) setBalance(Number(data.balance ?? 0))
+        const { data } = await client.get('/users/me')
+        if (active) setBalance(parseBalance(data.balance))
       } catch (err) {
         console.error('Wallet balance refresh failed:', err)
       }
@@ -79,7 +79,7 @@ export default function Wallet() {
     }
   }, [])
 
-  const { value: displayBalance, ref: balanceRef } = useCountUp(balance)
+  const displayBalance = useCountUp(balance)
 
   const openWhatsApp = (message) => {
     const encoded = encodeURIComponent(message)
@@ -129,7 +129,7 @@ export default function Wallet() {
       {/* Balance Header */}
       <motion.div className="wallet-balance-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         <p className="wallet-balance-label">Your Balance</p>
-        <h1 className="wallet-balance-number" ref={balanceRef}>{displayBalance}</h1>
+        <h1 className="wallet-balance-number">{displayBalance}</h1>
         <p className="wallet-balance-sublabel">credits</p>
       </motion.div>
 
