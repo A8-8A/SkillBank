@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
 import ReviewModal from './ReviewModal'
+import DisputeModal from './DisputeModal'
 
 const STATUS_LABELS = {
   PENDING: 'Pending',
@@ -30,7 +31,6 @@ function buildGoogleCalUrl(session) {
 
 export default function SessionCard({ session, onRefresh, onUpdate, onRemove, hasOverlap }) {
   const { user } = useAuth()
-  // Use server-provided role when available; fall back to ID comparison
   const isTeacher = session.role
     ? session.role === 'TEACHER'
     : String(session.teacher?.id) === String(user?.userId)
@@ -44,6 +44,7 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
   const duringSession = now >= scheduledAt && now <= endTime
 
   const [showReview, setShowReview] = useState(false)
+  const [showDispute, setShowDispute] = useState(false)
   const [hasReviewed, setHasReviewed] = useState(false)
 
   useEffect(() => {
@@ -76,18 +77,11 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
     }
   }
 
-  const fileDispute = async () => {
-    const reason = window.prompt('Describe the issue (e.g. teacher did not show up):')
-    if (!reason) return
-    await client.post('/disputes', { sessionId: session.id, reason })
-    onRefresh()
-  }
-
   return (
     <div className="card session-card">
       {hasOverlap && (
         <div className="session-overlap-warning">
-          <span>⚠ Overlaps with another session</span>
+          <span>Overlaps with another session</span>
           {isTeacher && (
             <button className="btn btn-danger btn-sm" onClick={async () => {
               if (onRemove) onRemove(session.id)
@@ -130,8 +124,8 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
       <div className="session-actions">
         {isTeacher && session.status === 'PENDING' && (
           <>
-            <button className="btn btn-success" onClick={confirm}>Confirm</button>
-            <button className="btn btn-danger" onClick={cancel}>Reject</button>
+            <button className="btn btn-success btn-sm" onClick={confirm}>Confirm</button>
+            <button className="btn btn-danger btn-sm" onClick={cancel}>Reject</button>
           </>
         )}
         {session.status === 'CONFIRMED' && (
@@ -145,7 +139,7 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
           </a>
         )}
         {isLearner && session.status === 'CONFIRMED' && duringSession && (
-          <button className="btn btn-warning" onClick={fileDispute}>
+          <button className="btn btn-danger btn-sm" onClick={() => setShowDispute(true)}>
             Report No-Show
           </button>
         )}
@@ -165,6 +159,14 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
           isTeacher={isTeacher}
           onClose={() => setShowReview(false)}
           onSubmit={() => { setShowReview(false); setHasReviewed(true); onRefresh() }}
+        />
+      )}
+
+      {showDispute && (
+        <DisputeModal
+          session={session}
+          onClose={() => setShowDispute(false)}
+          onSubmit={() => { setShowDispute(false); onRefresh() }}
         />
       )}
     </div>
