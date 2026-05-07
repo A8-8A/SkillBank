@@ -7,11 +7,15 @@ import { fadeUp, stagger, cardVariant } from '../lib/motionVariants'
 export default function Matches() {
   const [tab, setTab] = useState('all')
   const [matches, setMatches] = useState([])
+  const [allSkills, setAllSkills] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterSkill, setFilterSkill] = useState('')
-  const [filterCity, setFilterCity] = useState('')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    client.get('/skills/all').then(r => setAllSkills(r.data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     loadMatches()
@@ -19,6 +23,7 @@ export default function Matches() {
 
   const loadMatches = () => {
     setLoading(true)
+    setFilterSkill('')
     const endpoint = tab === 'mutual'
       ? '/matches/mutual'
       : tab === 'one-way'
@@ -46,16 +51,11 @@ export default function Matches() {
     }
   }
 
-  const allSkills = [...new Set(matches.flatMap(m => m.skillsTheyOffer))].sort()
-  const allCities = [...new Set(matches.map(m => m.city).filter(Boolean))].sort()
+  const taughtSkills = new Set(matches.flatMap(m => m.skillsTheyOffer))
 
-  const filteredMatches = matches.filter(m => {
-    const skillOk = !filterSkill || m.skillsTheyOffer.some(s => s.toLowerCase().includes(filterSkill.toLowerCase()))
-    const cityOk  = !filterCity  || (m.city && m.city.toLowerCase().includes(filterCity.toLowerCase()))
-    return skillOk && cityOk
-  })
-
-  const activeFilterCount = (filterSkill ? 1 : 0) + (filterCity ? 1 : 0)
+  const filteredMatches = filterSkill
+    ? matches.filter(m => m.skillsTheyOffer.includes(filterSkill))
+    : matches
 
   return (
     <div className="page">
@@ -97,32 +97,46 @@ export default function Matches() {
         )}
       </AnimatePresence>
 
-      {!loading && matches.length > 0 && (
-        <motion.div className="matches-filter-bar" {...fadeUp(0.16)}>
-          <select
-            value={filterSkill}
-            onChange={e => setFilterSkill(e.target.value)}
-            className="matches-filter-select"
-          >
-            <option value="">All Skills</option>
-            {allSkills.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select
-            value={filterCity}
-            onChange={e => setFilterCity(e.target.value)}
-            className="matches-filter-select"
-          >
-            <option value="">All Cities</option>
-            {allCities.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          {activeFilterCount > 0 && (
-            <button
-              className="btn btn-sm"
-              onClick={() => { setFilterSkill(''); setFilterCity('') }}
-            >
-              Clear filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-            </button>
-          )}
+      {allSkills.length > 0 && (
+        <motion.div className="skill-bubbles-wrapper" {...fadeUp(0.18)}>
+          <p className="skill-bubbles-label">Filter by skill</p>
+          <div className="skill-bubbles">
+            {allSkills.map((skill, i) => {
+              const available = taughtSkills.has(skill.name)
+              const active = filterSkill === skill.name
+              return (
+                <motion.button
+                  key={skill.id}
+                  className={`skill-bubble${active ? ' skill-bubble-active' : ''}${!available ? ' skill-bubble-empty' : ''}`}
+                  onClick={() => available && setFilterSkill(active ? '' : skill.name)}
+                  initial={{ opacity: 0, scale: 0.6, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: i * 0.025, type: 'spring', stiffness: 280, damping: 18 }}
+                  whileHover={available ? { scale: 1.1, y: -3, boxShadow: '0 8px 24px rgba(45,106,79,0.22)' } : {}}
+                  whileTap={available ? { scale: 0.82, rotateX: 18, rotateY: -8 } : {}}
+                  style={{ transformPerspective: 500, transformStyle: 'preserve-3d' }}
+                >
+                  {skill.name}
+                  {!available && <span className="bubble-empty-label"> · no one</span>}
+                </motion.button>
+              )
+            })}
+          </div>
+          <AnimatePresence>
+            {filterSkill && (
+              <motion.button
+                className="btn btn-sm"
+                style={{ marginTop: '0.75rem' }}
+                onClick={() => setFilterSkill('')}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+              >
+                Clear filter · {filterSkill}
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
 
@@ -139,15 +153,15 @@ export default function Matches() {
             transition={{ duration: 0.4 }}
           >
             <p>{
-              activeFilterCount > 0              ? 'No users match the selected filters.' :
-              tab === 'all'                      ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
-              tab === 'one-way'                  ? 'No one found teaching what you want to learn yet.' :
-                                                   'No mutual matches yet. Add more skills you offer and seek.'
+              filterSkill      ? `No one teaches "${filterSkill}" yet.` :
+              tab === 'all'    ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
+              tab === 'one-way'? 'No one found teaching what you want to learn yet.' :
+                                 'No mutual matches yet. Add more skills you offer and seek.'
             }</p>
           </motion.div>
         ) : (
           <motion.div
-            key={tab + searchQuery + filterSkill + filterCity}
+            key={tab + searchQuery + filterSkill}
             className="matches-grid"
             variants={stagger}
             initial="hidden"

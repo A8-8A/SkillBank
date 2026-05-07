@@ -453,10 +453,15 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .search-bar-input:focus { border-color:var(--primary); }
 .search-bar-input::placeholder { color:var(--muted); }
 
-/* ─── Matches Filters ───────────────────────────────────────────────────── */
-.matches-filter-bar { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-bottom:1.25rem; }
-.matches-filter-select { padding:.5rem .9rem; border:1.5px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); color:var(--text); font-size:.875rem; font-family:inherit; outline:none; cursor:pointer; transition:border-color .15s ease; }
-.matches-filter-select:focus { border-color:var(--primary); }
+/* ─── Skill Bubbles ──────────────────────────────────────────────────────── */
+.skill-bubbles-wrapper { margin-bottom:1.5rem; }
+.skill-bubbles-label { font-size:.8rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; }
+.skill-bubbles { display:flex; flex-wrap:wrap; gap:.45rem; }
+.skill-bubble { padding:.38rem 1rem; border-radius:999px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:.83rem; font-weight:500; font-family:inherit; cursor:pointer; transition:background .15s, border-color .15s, color .15s; will-change:transform; }
+.skill-bubble:hover { border-color:var(--primary); color:var(--primary); }
+.skill-bubble-active { background:var(--primary); color:#fff !important; border-color:var(--primary); box-shadow:0 4px 16px rgba(45,106,79,.32); }
+.skill-bubble-empty { opacity:.4; cursor:default; pointer-events:none; }
+.bubble-empty-label { font-size:.72rem; opacity:.75; }
 
 /* ─── Admin ──────────────────────────────────────────────────────────────── */
 .admin-header { margin-bottom:2rem; }
