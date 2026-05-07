@@ -2,17 +2,30 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import client from '../api/client'
 
+const TEACHING_QUESTIONS = [
+  { key: 'teacherOnTime', label: 'Did the teacher show up on time?' },
+  { key: 'contentUseful', label: 'Was the session content well-structured?' },
+  { key: 'wouldRecommend', label: 'Was the session interactive?' },
+]
+
+const LEARNING_QUESTIONS = [
+  { key: 'teacherOnTime', label: 'Did the learner show up on time?' },
+  { key: 'contentUseful', label: 'Was the learner engaged and attentive?' },
+  { key: 'wouldRecommend', label: 'Did the learner come prepared?' },
+]
+
 export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [comment, setComment] = useState('')
-  const [teacherOnTime, setTeacherOnTime] = useState(null)
-  const [contentUseful, setContentUseful] = useState(null)
-  const [wouldRecommend, setWouldRecommend] = useState(null)
+  const [answers, setAnswers] = useState({ teacherOnTime: null, contentUseful: null, wouldRecommend: null })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const isLearner = !isTeacher
+  const questions = isLearner ? TEACHING_QUESTIONS : LEARNING_QUESTIONS
+
+  const setAnswer = (key, value) => setAnswers(prev => ({ ...prev, [key]: value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -24,9 +37,9 @@ export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
         sessionId: session.id,
         rating,
         comment: comment || null,
-        teacherOnTime: isLearner ? teacherOnTime : null,
-        contentUseful: isLearner ? contentUseful : null,
-        wouldRecommend
+        teacherOnTime: answers.teacherOnTime,
+        contentUseful: answers.contentUseful,
+        wouldRecommend: answers.wouldRecommend
       })
       onSubmit()
     } catch (err) {
@@ -66,31 +79,16 @@ export default function ReviewModal({ session, isTeacher, onClose, onSubmit }) {
             </div>
           </div>
 
-          {isLearner && (
-            <div className="feedback-questions">
-              <div className="feedback-q">
-                <span>Did the teacher show up on time?</span>
+          <div className="feedback-questions">
+            {questions.map(q => (
+              <div key={q.key} className="feedback-q">
+                <span>{q.label}</span>
                 <div className="feedback-btns">
-                  <button type="button" className={`fbtn ${teacherOnTime === true ? 'fbtn-yes' : ''}`} onClick={() => setTeacherOnTime(true)}>Yes</button>
-                  <button type="button" className={`fbtn ${teacherOnTime === false ? 'fbtn-no' : ''}`} onClick={() => setTeacherOnTime(false)}>No</button>
+                  <button type="button" className={`fbtn ${answers[q.key] === true ? 'fbtn-yes' : ''}`} onClick={() => setAnswer(q.key, true)}>Yes</button>
+                  <button type="button" className={`fbtn ${answers[q.key] === false ? 'fbtn-no' : ''}`} onClick={() => setAnswer(q.key, false)}>No</button>
                 </div>
               </div>
-              <div className="feedback-q">
-                <span>Was the content useful?</span>
-                <div className="feedback-btns">
-                  <button type="button" className={`fbtn ${contentUseful === true ? 'fbtn-yes' : ''}`} onClick={() => setContentUseful(true)}>Yes</button>
-                  <button type="button" className={`fbtn ${contentUseful === false ? 'fbtn-no' : ''}`} onClick={() => setContentUseful(false)}>No</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="feedback-q" style={{ marginTop: '0.75rem' }}>
-            <span>Would you recommend {otherPerson}?</span>
-            <div className="feedback-btns">
-              <button type="button" className={`fbtn ${wouldRecommend === true ? 'fbtn-yes' : ''}`} onClick={() => setWouldRecommend(true)}>Yes</button>
-              <button type="button" className={`fbtn ${wouldRecommend === false ? 'fbtn-no' : ''}`} onClick={() => setWouldRecommend(false)}>No</button>
-            </div>
+            ))}
           </div>
 
           <div className="form-group" style={{ marginTop: '1rem' }}>

@@ -21,6 +21,25 @@ function FeedbackBadge({ label, value }) {
   )
 }
 
+function ReviewFeedback({ review }) {
+  if (review.type === 'TEACHING') {
+    return (
+      <div className="review-feedback-row">
+        <FeedbackBadge label="On time" value={review.teacherOnTime} />
+        <FeedbackBadge label="Well-structured" value={review.contentUseful} />
+        <FeedbackBadge label="Interactive" value={review.wouldRecommend} />
+      </div>
+    )
+  }
+  return (
+    <div className="review-feedback-row">
+      <FeedbackBadge label="On time" value={review.teacherOnTime} />
+      <FeedbackBadge label="Engaged" value={review.contentUseful} />
+      <FeedbackBadge label="Came prepared" value={review.wouldRecommend} />
+    </div>
+  )
+}
+
 export default function UserReviews() {
   const { userId } = useParams()
   const [searchParams] = useSearchParams()
@@ -122,11 +141,7 @@ export default function UserReviews() {
                 </div>
               </div>
 
-              <div className="review-feedback-row">
-                <FeedbackBadge label="On time" value={r.teacherOnTime} />
-                <FeedbackBadge label="Content useful" value={r.contentUseful} />
-                <FeedbackBadge label="Would recommend" value={r.wouldRecommend} />
-              </div>
+              <ReviewFeedback review={r} />
 
               {r.comment && (
                 <div className="review-comment">

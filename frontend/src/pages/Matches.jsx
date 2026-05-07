@@ -48,7 +48,7 @@ export default function Matches() {
     <div className="page">
       <motion.h1 {...fadeUp(0)}>Matches</motion.h1>
       <motion.p className="muted" {...fadeUp(0.08)}>
-        Find people to exchange skills with. Click "View Profile" to see their availability and book a session.
+        Find people to exchange skills with. Click a name or photo to view their profile.
       </motion.p>
 
       <motion.div className="tabs" {...fadeUp(0.12)}>
@@ -119,18 +119,25 @@ export default function Matches() {
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
                 <div className="match-header">
-                  <div>
-                    <h3>{m.name}</h3>
-                    {m.city && <span className="muted">{m.city}</span>}
-                  </div>
-                  <motion.button
-                    className="btn btn-primary btn-sm"
+                  <div
+                    className="match-user-link"
                     onClick={() => navigate(`/user/${m.userId}`)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                   >
-                    View Profile
-                  </motion.button>
+                    <div
+                      className="match-avatar"
+                      style={{
+                        backgroundImage: m.profilePicUrl ? `url(${m.profilePicUrl})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    >
+                      {!m.profilePicUrl && m.name?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="match-name-link">{m.name}</h3>
+                      {m.city && <span className="muted">{m.city}</span>}
+                    </div>
+                  </div>
                 </div>
                 {m.bio && <p className="match-bio">{m.bio}</p>}
                 <div className="match-skills">

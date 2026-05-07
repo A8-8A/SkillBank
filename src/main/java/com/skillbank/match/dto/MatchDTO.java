@@ -12,6 +12,7 @@ public class MatchDTO {
     private String name;
     private String city;
     private String bio;
+    private String profilePicUrl;
     private List<String> skillsTheyOffer;
     private List<String> skillsTheySeek;
 }

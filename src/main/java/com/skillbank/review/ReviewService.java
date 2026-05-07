@@ -55,6 +55,7 @@ public class ReviewService {
             type = ReviewType.LEARNING;
         }
 
+        // Save all 3 feedback fields for both review types
         return reviewRepo.save(Review.builder()
                 .session(session)
                 .reviewer(reviewer)
@@ -62,8 +63,8 @@ public class ReviewService {
                 .type(type)
                 .rating(rating)
                 .comment(comment)
-                .teacherOnTime(type == ReviewType.TEACHING ? teacherOnTime : null)
-                .contentUseful(type == ReviewType.TEACHING ? contentUseful : null)
+                .teacherOnTime(teacherOnTime)
+                .contentUseful(contentUseful)
                 .wouldRecommend(wouldRecommend)
                 .build());
     }

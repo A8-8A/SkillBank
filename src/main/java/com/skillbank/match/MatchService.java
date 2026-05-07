@@ -25,7 +25,7 @@ public class MatchService {
         List<User> matches = userSkillRepo.findMutualMatches(currentUser.getId());
         return matches.stream()
                 .filter(u -> u.isEmailVerified() && u.getRole() != Role.ADMIN)
-                .map(u -> buildMatchDTO(u, currentUser.getId()))
+                .map(this::buildMatchDTO)
                 .toList();
     }
 
@@ -36,7 +36,7 @@ public class MatchService {
                 .map(us -> us.getUser())
                 .filter(u -> u.isEmailVerified() && u.getRole() != Role.ADMIN)
                 .distinct()
-                .map(u -> buildMatchDTO(u, currentUser.getId()))
+                .map(this::buildMatchDTO)
                 .toList();
     }
 
@@ -45,7 +45,7 @@ public class MatchService {
         List<User> seekers = userSkillRepo.findUsersSeekingMySkills(currentUser.getId());
         return seekers.stream()
                 .filter(u -> u.isEmailVerified() && u.getRole() != Role.ADMIN)
-                .map(u -> buildMatchDTO(u, currentUser.getId()))
+                .map(this::buildMatchDTO)
                 .toList();
     }
 
@@ -63,11 +63,11 @@ public class MatchService {
                 .filter(u -> !u.getId().equals(currentUser.getId()))
                 .filter(u -> u.isEmailVerified())
                 .filter(u -> u.getRole() != Role.ADMIN)
-                .map(u -> buildMatchDTO(u, currentUser.getId()))
+                .map(this::buildMatchDTO)
                 .toList();
     }
 
-    private MatchDTO buildMatchDTO(User user, Long forUserId) {
+    private MatchDTO buildMatchDTO(User user) {
         List<UserSkill> skills = userSkillRepo.findByUserId(user.getId());
 
         List<String> offers = skills.stream()
@@ -80,6 +80,7 @@ public class MatchService {
                 .map(s -> s.getSkill().getName())
                 .toList();
 
-        return new MatchDTO(user.getId(), user.getName(), user.getCity(), user.getBio(), offers, seeks);
+        return new MatchDTO(user.getId(), user.getName(), user.getCity(), user.getBio(),
+                user.getProfilePicUrl(), offers, seeks);
     }
 }
