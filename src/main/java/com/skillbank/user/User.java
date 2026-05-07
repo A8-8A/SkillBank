@@ -33,6 +33,9 @@ public class User implements UserDetails {
     private String bio;
     private String city;
     private String phoneNumber;
+    private String contactEmail;
+    private String linkedinUrl;
+    private String socialMediaUrl;
     private String profilePicUrl;
 
     @Builder.Default

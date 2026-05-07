@@ -17,6 +17,9 @@ public class UserProfileResponse {
     private String bio;
     private String city;
     private String phoneNumber;
+    private String contactEmail;
+    private String linkedinUrl;
+    private String socialMediaUrl;
     private String profilePicUrl;
     private String role;
     private BigDecimal balance;

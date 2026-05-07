@@ -50,11 +50,16 @@ public class UserService {
     }
 
     @Transactional
-    public UserProfileResponse updateProfile(User currentUser, String bio, String city, String name, String phoneNumber, String profilePicUrl) {
+    public UserProfileResponse updateProfile(User currentUser, String bio, String city, String name, String phoneNumber,
+                                             String contactEmail, String linkedinUrl, String socialMediaUrl,
+                                             String profilePicUrl) {
         if (name != null && !name.isBlank()) currentUser.setName(name);
         if (bio != null) currentUser.setBio(bio);
         if (city != null) currentUser.setCity(city);
         if (phoneNumber != null) currentUser.setPhoneNumber(phoneNumber);
+        if (contactEmail != null) currentUser.setContactEmail(contactEmail);
+        if (linkedinUrl != null) currentUser.setLinkedinUrl(linkedinUrl);
+        if (socialMediaUrl != null) currentUser.setSocialMediaUrl(socialMediaUrl);
         if (profilePicUrl != null) currentUser.setProfilePicUrl(profilePicUrl);
         userRepository.save(currentUser);
         return toResponse(currentUser);
@@ -142,6 +147,9 @@ public class UserService {
                 .bio(user.getBio())
                 .city(user.getCity())
                 .phoneNumber(user.getPhoneNumber())
+                .contactEmail(user.getContactEmail())
+                .linkedinUrl(user.getLinkedinUrl())
+                .socialMediaUrl(user.getSocialMediaUrl())
                 .profilePicUrl(user.getProfilePicUrl())
                 .role(user.getRole().name())
                 .balance(balance)

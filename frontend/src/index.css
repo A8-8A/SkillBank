@@ -352,6 +352,37 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .profile-info     { display:flex; flex-direction:column; gap:.4rem; }
 .profile-info h1  { margin-bottom:0; font-size:1.6rem; color:var(--primary-dark); }
 .profile-meta     { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.82rem; color:var(--muted); }
+.profile-info-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:.65rem;
+  margin-top:.35rem;
+}
+.profile-info-item {
+  display:flex;
+  flex-direction:column;
+  gap:.15rem;
+  min-width:0;
+  padding:.65rem .75rem;
+  border:1px solid var(--border-light);
+  border-radius:var(--radius-sm);
+  background:var(--surface);
+}
+.profile-info-item span {
+  color:var(--muted);
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.profile-info-item strong,
+.profile-info-item a {
+  color:var(--text);
+  font-size:.86rem;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.profile-info-item a:hover { color:var(--primary); }
 .profile-bio      { font-size:.9rem; color:var(--text-secondary); font-style:italic; }
 .profile-actions-row  { display:flex; align-items:center; gap:.75rem; margin-top:.25rem; }
 .balance-badge { background:linear-gradient(135deg, var(--primary-light), #c2d99a); color:var(--primary-dark); padding:.3rem 1rem; border-radius:99px; font-weight:700; font-size:.85rem; }

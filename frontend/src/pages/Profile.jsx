@@ -48,7 +48,10 @@ export default function Profile() {
           name: p.data.name,
           bio: p.data.bio || '',
           city: p.data.city || '',
-          phoneNumber: p.data.phoneNumber || ''
+          phoneNumber: p.data.phoneNumber || '',
+          contactEmail: p.data.contactEmail || '',
+          linkedinUrl: p.data.linkedinUrl || '',
+          socialMediaUrl: p.data.socialMediaUrl || ''
         })
       })
       .catch(err => {
@@ -183,6 +186,26 @@ export default function Profile() {
 
   const offers = skills.filter(s => s.type === 'OFFER')
   const seeks  = skills.filter(s => s.type === 'SEEK')
+  const externalUrl = (value) => {
+    if (!value) return null
+    const trimmed = value.trim()
+    if (/^https?:\/\//i.test(trimmed)) return trimmed
+    if (trimmed.includes('.') && !trimmed.startsWith('@')) return `https://${trimmed}`
+    return null
+  }
+  const profileInfoItems = [
+    { label: 'Location', value: profile.city },
+    { label: 'Phone', value: profile.phoneNumber },
+    { label: 'Contact email', value: profile.contactEmail, href: profile.contactEmail ? `mailto:${profile.contactEmail}` : null },
+    { label: 'LinkedIn', value: profile.linkedinUrl, href: externalUrl(profile.linkedinUrl) },
+    { label: 'Social media', value: profile.socialMediaUrl, href: externalUrl(profile.socialMediaUrl) },
+    {
+      label: 'Joined',
+      value: profile.createdAt
+        ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' })
+        : null
+    }
+  ].filter(item => item.value)
 
   return (
     <div className="page">
@@ -255,6 +278,20 @@ export default function Profile() {
                     <label>Phone</label>
                     <input value={editForm.phoneNumber} onChange={e => setEditForm({...editForm, phoneNumber: e.target.value})} placeholder="+1 234 567 8900" />
                   </div>
+                  <div className="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" value={editForm.contactEmail} onChange={e => setEditForm({...editForm, contactEmail: e.target.value})} placeholder="name@example.com" />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>LinkedIn</label>
+                    <input value={editForm.linkedinUrl} onChange={e => setEditForm({...editForm, linkedinUrl: e.target.value})} placeholder="https://linkedin.com/in/username" />
+                  </div>
+                  <div className="form-group">
+                    <label>Social Media</label>
+                    <input value={editForm.socialMediaUrl} onChange={e => setEditForm({...editForm, socialMediaUrl: e.target.value})} placeholder="@username or https://instagram.com/username" />
+                  </div>
                 </div>
                 <div className="form-group">
                   <label>Bio</label>
@@ -268,10 +305,19 @@ export default function Profile() {
             ) : (
               <>
                 <h1>{profile.name}</h1>
-                <div className="profile-meta">
-                  {profile.city && <span>{profile.city}</span>}
-                  {profile.phoneNumber && <span>{profile.phoneNumber}</span>}
-                  <span>Joined {new Date(profile.createdAt).toLocaleDateString('en-GB', { month:'short', year:'numeric' })}</span>
+                <div className="profile-info-grid">
+                  {profileInfoItems.map(item => (
+                    <div key={item.label} className="profile-info-item">
+                      <span>{item.label}</span>
+                      {item.href ? (
+                        <a href={item.href} target={item.href.startsWith('mailto:') ? undefined : '_blank'} rel="noreferrer">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <strong>{item.value}</strong>
+                      )}
+                    </div>
+                  ))}
                 </div>
                 {profile.bio && <p className="profile-bio">{profile.bio}</p>}
                 {isOwn && (

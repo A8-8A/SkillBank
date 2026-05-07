@@ -38,6 +38,9 @@ public class UserController {
                 updates.get("city"),
                 updates.get("name"),
                 updates.get("phoneNumber"),
+                updates.get("contactEmail"),
+                updates.get("linkedinUrl"),
+                updates.get("socialMediaUrl"),
                 updates.get("profilePicUrl")
         ));
     }
