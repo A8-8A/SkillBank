@@ -37,14 +37,15 @@ public class UserService {
     private final TimeTransactionRepository timeTransactionRepository;
     private final SkillRepository skillRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReferralCodeService referralCodeService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public UserProfileResponse getProfile(Long userId) {
         User user = findById(userId);
         return toResponse(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public UserProfileResponse getMyProfile(User currentUser) {
         return toResponse(currentUser);
     }
@@ -111,6 +112,7 @@ public class UserService {
     }
 
     private UserProfileResponse toResponse(User user) {
+        ensureReferralCode(user);
         BigDecimal balance = escrowService.getBalance(user.getId());
 
         double teachingRating = 0;
@@ -162,5 +164,14 @@ public class UserService {
                 .sessionsTaught(sessionsTaught)
                 .sessionsLearned(sessionsLearned)
                 .build();
+    }
+
+    private void ensureReferralCode(User user) {
+        if (user.getReferralCode() != null && !user.getReferralCode().isBlank()) {
+            return;
+        }
+
+        user.setReferralCode(referralCodeService.generateForName(user.getName()));
+        userRepository.save(user);
     }
 }

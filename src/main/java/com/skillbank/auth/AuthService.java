@@ -6,6 +6,7 @@ import com.skillbank.auth.dto.RegisterRequest;
 import com.skillbank.config.JwtUtil;
 import com.skillbank.email.EmailService;
 import com.skillbank.transaction.EscrowService;
+import com.skillbank.user.ReferralCodeService;
 import com.skillbank.user.Role;
 import com.skillbank.user.User;
 import com.skillbank.user.UserRepository;
@@ -18,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +31,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final EscrowService escrowService;
     private final EmailService emailService;
+    private final ReferralCodeService referralCodeService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -39,7 +40,8 @@ public class AuthService {
         }
 
         String verificationToken = UUID.randomUUID().toString();
-        String referralCode = generateReferralCode(request.getName());
+        String referralCode = referralCodeService.generateForName(request.getName());
+        String requestedReferralCode = referralCodeService.normalize(request.getReferralCode());
 
         User user = User.builder()
                 .name(request.getName())
@@ -55,11 +57,10 @@ public class AuthService {
                 .build();
 
         // Handle referral
-        if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {
-            User referrer = userRepository.findByReferralCode(request.getReferralCode().trim()).orElse(null);
-            if (referrer != null) {
-                user.setReferredBy(referrer.getId());
-            }
+        if (requestedReferralCode != null) {
+            User referrer = userRepository.findByReferralCodeIgnoreCase(requestedReferralCode)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid referral code"));
+            user.setReferredBy(referrer.getId());
         }
 
         user = userRepository.save(user);
@@ -151,17 +152,5 @@ public class AuthService {
         userRepository.save(user);
 
         emailService.sendVerificationEmail(user.getEmail(), user.getName(), verificationToken);
-    }
-
-    private String generateReferralCode(String name) {
-        String prefix = name.replaceAll("[^a-zA-Z]", "").toUpperCase();
-        if (prefix.length() > 4) prefix = prefix.substring(0, 4);
-        if (prefix.isEmpty()) prefix = "USER";
-        String code = prefix + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-
-        while (userRepository.findByReferralCode(code).isPresent()) {
-            code = prefix + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        }
-        return code;
     }
 }
