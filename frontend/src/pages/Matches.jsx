@@ -9,6 +9,8 @@ export default function Matches() {
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filterSkill, setFilterSkill] = useState('')
+  const [filterCity, setFilterCity] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -43,6 +45,17 @@ export default function Matches() {
       }, 400)
     }
   }
+
+  const allSkills = [...new Set(matches.flatMap(m => m.skillsTheyOffer))].sort()
+  const allCities = [...new Set(matches.map(m => m.city).filter(Boolean))].sort()
+
+  const filteredMatches = matches.filter(m => {
+    const skillOk = !filterSkill || m.skillsTheyOffer.some(s => s.toLowerCase().includes(filterSkill.toLowerCase()))
+    const cityOk  = !filterCity  || (m.city && m.city.toLowerCase().includes(filterCity.toLowerCase()))
+    return skillOk && cityOk
+  })
+
+  const activeFilterCount = (filterSkill ? 1 : 0) + (filterCity ? 1 : 0)
 
   return (
     <div className="page">
@@ -84,10 +97,39 @@ export default function Matches() {
         )}
       </AnimatePresence>
 
+      {!loading && matches.length > 0 && (
+        <motion.div className="matches-filter-bar" {...fadeUp(0.16)}>
+          <select
+            value={filterSkill}
+            onChange={e => setFilterSkill(e.target.value)}
+            className="matches-filter-select"
+          >
+            <option value="">All Skills</option>
+            {allSkills.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <select
+            value={filterCity}
+            onChange={e => setFilterCity(e.target.value)}
+            className="matches-filter-select"
+          >
+            <option value="">All Cities</option>
+            {allCities.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {activeFilterCount > 0 && (
+            <button
+              className="btn btn-sm"
+              onClick={() => { setFilterSkill(''); setFilterCity('') }}
+            >
+              Clear filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+            </button>
+          )}
+        </motion.div>
+      )}
+
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div key="loading" className="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-        ) : matches.length === 0 ? (
+        ) : filteredMatches.length === 0 ? (
           <motion.div
             key="empty"
             className="empty-state"
@@ -97,21 +139,22 @@ export default function Matches() {
             transition={{ duration: 0.4 }}
           >
             <p>{
-              tab === 'all'       ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
-              tab === 'one-way'   ? 'No one found teaching what you want to learn yet.' :
-                                    'No mutual matches yet. Add more skills you offer and seek.'
+              activeFilterCount > 0              ? 'No users match the selected filters.' :
+              tab === 'all'                      ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
+              tab === 'one-way'                  ? 'No one found teaching what you want to learn yet.' :
+                                                   'No mutual matches yet. Add more skills you offer and seek.'
             }</p>
           </motion.div>
         ) : (
           <motion.div
-            key={tab + searchQuery}
+            key={tab + searchQuery + filterSkill + filterCity}
             className="matches-grid"
             variants={stagger}
             initial="hidden"
             animate="show"
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
           >
-            {matches.map(m => (
+            {filteredMatches.map(m => (
               <motion.div
                 key={m.userId}
                 className="card match-card"
