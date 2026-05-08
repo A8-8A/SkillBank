@@ -273,6 +273,19 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .session-actions { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; padding-top:.75rem; border-top:1px solid var(--border-light); padding-left:.5rem; }
 .session-overlap-warning { display:flex; align-items:center; justify-content:space-between; gap:.75rem; background:#fef3cd; color:#7a5c14; border:1px solid #f0d060; border-radius:var(--radius-sm); padding:.4rem .75rem; font-size:.8rem; font-weight:600; margin-bottom:.25rem; }
 
+/* ─── Cancelled History ──────────────────────────────────────────────────── */
+.cancelled-history { border:1.5px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); overflow:hidden; }
+.cancelled-history-toggle {
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:1rem 1.25rem; background:transparent; border:none;
+  font-family:inherit; font-size:.9rem; font-weight:600; color:var(--text-secondary);
+  cursor:pointer; gap:.75rem; transition:background .15s, color .15s;
+}
+.cancelled-history-toggle:hover { background:var(--surface-2); color:var(--text); }
+.cancelled-history-toggle span:first-child { display:flex; align-items:center; gap:.6rem; }
+.cancelled-history-toggle span:first-child::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+.cancelled-history-grid { padding:1.25rem; border-top:1px solid var(--border-light); }
+
 /* ─── Skills ─────────────────────────────────────────────────────────────── */
 .skills-columns { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
 .skills-section-title { font-size:.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:1rem; }
