@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import client from '../api/client'
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     client.get('/admin/users').then(r => setUsers(r.data)).finally(() => setLoading(false))
@@ -38,7 +40,7 @@ export default function AdminUsers() {
         <table className="table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>User</th>
               <th>Email</th>
               <th>City</th>
               <th>Role</th>
@@ -50,7 +52,24 @@ export default function AdminUsers() {
           <tbody>
             {filtered.map(u => (
               <tr key={u.id}>
-                <td><strong>{u.name}</strong></td>
+                <td>
+                  <div
+                    className="admin-user-cell"
+                    onClick={() => navigate(`/user/${u.id}`)}
+                  >
+                    <div
+                      className="admin-user-avatar"
+                      style={{
+                        backgroundImage: u.profilePicUrl ? `url(${u.profilePicUrl})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    >
+                      {!u.profilePicUrl && u.name?.[0]?.toUpperCase()}
+                    </div>
+                    <strong className="admin-user-name">{u.name}</strong>
+                  </div>
+                </td>
                 <td style={{ fontSize: '0.85rem' }}>{u.email}</td>
                 <td>{u.city || '—'}</td>
                 <td><span className={`badge ${u.role === 'ADMIN' ? 'badge-confirmed' : 'badge-pending'}`}>{u.role}</span></td>

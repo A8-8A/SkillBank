@@ -270,13 +270,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .session-body   { display:flex; flex-direction:column; gap:.45rem; padding-left:.5rem; }
 .session-row    { display:flex; gap:.75rem; font-size:.875rem; }
 .session-row .label { color:var(--muted); min-width:72px; flex-shrink:0; font-weight:500; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
-.session-actions { display:flex; gap:.5rem; padding-top:.75rem; border-top:1px solid var(--border-light); padding-left:.5rem; }
+.session-actions { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; padding-top:.75rem; border-top:1px solid var(--border-light); padding-left:.5rem; }
 .session-overlap-warning { display:flex; align-items:center; justify-content:space-between; gap:.75rem; background:#fef3cd; color:#7a5c14; border:1px solid #f0d060; border-radius:var(--radius-sm); padding:.4rem .75rem; font-size:.8rem; font-weight:600; margin-bottom:.25rem; }
-.cancelled-history { margin-top:2rem; }
-.cancelled-history-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; padding:.65rem 1rem; background:var(--surface-2); border:1px solid var(--border-light); border-radius:var(--radius); cursor:pointer; font-size:.875rem; font-weight:600; color:var(--muted); margin-bottom:1rem; transition:background var(--transition); font-family:inherit; }
-.cancelled-history-toggle:hover { background:var(--surface-3); }
-.cancelled-history-grid .session-card { opacity:.7; }
-.cancelled-history-grid .session-card::before { background:var(--surface-3); }
 
 /* ─── Skills ─────────────────────────────────────────────────────────────── */
 .skills-columns { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
@@ -352,37 +347,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .profile-info     { display:flex; flex-direction:column; gap:.4rem; }
 .profile-info h1  { margin-bottom:0; font-size:1.6rem; color:var(--primary-dark); }
 .profile-meta     { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.82rem; color:var(--muted); }
-.profile-info-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:.65rem;
-  margin-top:.35rem;
-}
-.profile-info-item {
-  display:flex;
-  flex-direction:column;
-  gap:.15rem;
-  min-width:0;
-  padding:.65rem .75rem;
-  border:1px solid var(--border-light);
-  border-radius:var(--radius-sm);
-  background:var(--surface);
-}
-.profile-info-item span {
-  color:var(--muted);
-  font-size:.68rem;
-  font-weight:800;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-.profile-info-item strong,
-.profile-info-item a {
-  color:var(--text);
-  font-size:.86rem;
-  font-weight:700;
-  overflow-wrap:anywhere;
-}
-.profile-info-item a:hover { color:var(--primary); }
 .profile-bio      { font-size:.9rem; color:var(--text-secondary); font-style:italic; }
 .profile-actions-row  { display:flex; align-items:center; gap:.75rem; margin-top:.25rem; }
 .balance-badge { background:linear-gradient(135deg, var(--primary-light), #c2d99a); color:var(--primary-dark); padding:.3rem 1rem; border-radius:99px; font-weight:700; font-size:.85rem; }
@@ -452,16 +416,6 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .search-bar-input { width:100%; padding:.85rem 1.25rem; border:1.5px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); color:var(--text); font-size:.95rem; outline:none; font-family:inherit; transition:border-color .15s ease; }
 .search-bar-input:focus { border-color:var(--primary); }
 .search-bar-input::placeholder { color:var(--muted); }
-
-/* ─── Skill Bubbles ──────────────────────────────────────────────────────── */
-.skill-bubbles-wrapper { margin-bottom:1.5rem; }
-.skill-bubbles-label { font-size:.8rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.6rem; }
-.skill-bubbles { display:flex; flex-wrap:wrap; gap:.45rem; }
-.skill-bubble { padding:.38rem 1rem; border-radius:999px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:.83rem; font-weight:500; font-family:inherit; cursor:pointer; transition:background .15s, border-color .15s, color .15s; will-change:transform; }
-.skill-bubble:hover { border-color:var(--primary); color:var(--primary); }
-.skill-bubble-active { background:var(--primary); color:#fff !important; border-color:var(--primary); box-shadow:0 4px 16px rgba(45,106,79,.32); }
-.skill-bubble-empty { opacity:.4; cursor:default; pointer-events:none; }
-.bubble-empty-label { font-size:.72rem; opacity:.75; }
 
 /* ─── Admin ──────────────────────────────────────────────────────────────── */
 .admin-header { margin-bottom:2rem; }
@@ -790,3 +744,33 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 }
 .match-user-link:hover .match-avatar { transform: scale(1.08); }
 .match-name-link { color: var(--color-primary, #2d6a4f); margin: 0; }
+/* ── Admin User Cell (with avatar) ─────────────────────────────────── */
+.admin-user-cell {
+  display: flex; align-items: center; gap: 0.6rem;
+  cursor: pointer; transition: opacity .15s ease;
+}
+.admin-user-cell:hover { opacity: 0.7; }
+.admin-user-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: var(--color-primary, #2d6a4f); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700;
+  transition: transform .15s ease;
+}
+.admin-user-cell:hover .admin-user-avatar { transform: scale(1.08); }
+.admin-user-name { color: var(--color-primary, #2d6a4f); font-size: 0.9rem; }
+
+/* ── Admin Session User Link ──────────────────────────────────────── */
+.admin-session-user {
+  cursor: pointer; color: var(--color-primary, #2d6a4f);
+  font-weight: 600; font-size: 0.9rem;
+  transition: opacity .15s ease;
+}
+.admin-session-user:hover { opacity: 0.7; text-decoration: underline; }
+
+/* ── Admin Manage Cards Fix ───────────────────────────────────────── */
+.admin-link-wrapper { display: flex; }
+.admin-link-wrapper .admin-link-card {
+  display: flex; flex-direction: column; justify-content: flex-start;
+  width: 100%; height: 100%;
+}

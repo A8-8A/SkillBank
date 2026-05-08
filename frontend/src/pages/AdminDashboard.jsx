@@ -26,7 +26,7 @@ function useCountUp(target, duration = 1000) {
   return { value, ref }
 }
 
-function StatCard({ number, label, delay = 0 }) {
+function StatCard({ number, label }) {
   const { value, ref } = useCountUp(number)
   return (
     <motion.div
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
         animate="show"
       >
         {statItems.map((s, i) => (
-          <StatCard key={i} number={s.number} label={s.label} delay={i * 0.08} />
+          <StatCard key={i} number={s.number} label={s.label} />
         ))}
       </motion.div>
 
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
           viewport={{ once: true }}
         >
           {links.map((l, i) => (
-            <motion.div key={i} variants={cardVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
+            <motion.div key={i} className="admin-link-wrapper" variants={cardVariant} whileHover={{ y: -4, transition: { duration: 0.2 } }}>
               <Link to={l.to} className="admin-link-card">
                 <h3>{l.title}</h3>
                 <p>{l.desc}</p>

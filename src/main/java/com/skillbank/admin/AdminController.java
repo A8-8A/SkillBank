@@ -5,7 +5,6 @@ import com.skillbank.skill.SkillRepository;
 import com.skillbank.skill.UserSkillRepository;
 import com.skillbank.transaction.EscrowService;
 import com.skillbank.transaction.TimeTransactionRepository;
-import com.skillbank.transaction.TransactionType;
 import com.skillbank.user.User;
 import com.skillbank.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -118,6 +117,7 @@ public class AdminController {
             map.put("name", u.getName());
             map.put("email", u.getEmail());
             map.put("city", u.getCity());
+            map.put("profilePicUrl", u.getProfilePicUrl());
             map.put("role", u.getRole().name());
             map.put("emailVerified", u.isEmailVerified());
             map.put("createdAt", u.getCreatedAt());
@@ -134,8 +134,10 @@ public class AdminController {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", s.getId());
                 map.put("teacher", s.getTeacher().getName());
+                map.put("teacherId", s.getTeacher().getId());
                 map.put("teacherEmail", s.getTeacher().getEmail());
                 map.put("learner", s.getLearner().getName());
+                map.put("learnerId", s.getLearner().getId());
                 map.put("learnerEmail", s.getLearner().getEmail());
                 map.put("skill", s.getSkill().getName());
                 map.put("status", s.getStatus().name());
