@@ -9,6 +9,8 @@ export default function Matches() {
   const [matches, setMatches] = useState([])
   const [categories, setCategories] = useState([])
   const [skillCategoryMap, setSkillCategoryMap] = useState({})
+  const [currentProfile, setCurrentProfile] = useState(null)
+  const [currentSkills, setCurrentSkills] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
@@ -25,6 +27,14 @@ export default function Matches() {
 
     client.get('/skills/categories')
       .then(r => setCategories(r.data))
+      .catch(() => {})
+
+    client.get('/users/me')
+      .then(r => setCurrentProfile(r.data))
+      .catch(() => {})
+
+    client.get('/skills/my')
+      .then(r => setCurrentSkills(r.data))
       .catch(() => {})
   }, [])
 
@@ -67,9 +77,52 @@ export default function Matches() {
     matches.flatMap(m => m.skillsTheyOffer.map(s => skillCategoryMap[s]).filter(Boolean))
   )
 
+  const wantedSkills = new Set(
+    currentSkills
+      .filter(s => s.type === 'SEEK')
+      .map(s => s.skill?.name)
+      .filter(Boolean)
+  )
+  const offeredSkills = new Set(
+    currentSkills
+      .filter(s => s.type === 'OFFER')
+      .map(s => s.skill?.name)
+      .filter(Boolean)
+  )
+  const myCity = currentProfile?.city?.trim().toLowerCase()
+
   const filteredMatches = filterCategory
-    ? matches.filter(m => m.skillsTheyOffer.some(s => skillCategoryMap[s] === filterCategory))
+    ? rankCategoryMatches(matches.filter(m => m.skillsTheyOffer.some(s => skillCategoryMap[s] === filterCategory)))
     : matches
+
+  function rankCategoryMatches(categoryMatches) {
+    return [...categoryMatches].sort((a, b) => {
+      const scoreA = recommendationScore(a, wantedSkills, offeredSkills, myCity)
+      const scoreB = recommendationScore(b, wantedSkills, offeredSkills, myCity)
+      if (scoreA !== scoreB) return scoreB - scoreA
+      return a.name.localeCompare(b.name)
+    })
+  }
+
+  function recommendationScore(match, wantedSkills, offeredSkills, myCity) {
+    const teachesNeededSkill = match.skillsTheyOffer.some(skill => wantedSkills.has(skill))
+    const wantsMySkill = match.skillsTheySeek.some(skill => offeredSkills.has(skill))
+    const sameCity = myCity && match.city?.trim().toLowerCase() === myCity
+
+    let score = 0
+    if (teachesNeededSkill) score += 100
+    if (sameCity) score += 40
+    if (wantsMySkill) score += 25
+    return score
+  }
+
+  function recommendationReasons(match) {
+    const reasons = []
+    if (match.skillsTheyOffer.some(skill => wantedSkills.has(skill))) reasons.push('Teaches what you need')
+    if (myCity && match.city?.trim().toLowerCase() === myCity) reasons.push('Same city')
+    if (match.skillsTheySeek.some(skill => offeredSkills.has(skill))) reasons.push('Mutual exchange')
+    return reasons
+  }
 
   return (
     <div className="page">
@@ -201,6 +254,13 @@ export default function Matches() {
                     </div>
                   </div>
                 </div>
+                {filterCategory && recommendationScore(m, wantedSkills, offeredSkills, myCity) > 0 && (
+                  <div className="match-recommendation-reasons">
+                    {recommendationReasons(m).map(reason => (
+                      <span key={reason}>{reason}</span>
+                    ))}
+                  </div>
+                )}
                 {m.bio && <p className="match-bio">{m.bio}</p>}
                 <div className="match-skills">
                   {m.skillsTheyOffer.length > 0 && (
