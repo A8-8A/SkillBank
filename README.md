@@ -2,793 +2,1934 @@
 
 ## What Is SkillBank?
 
-SkillBank is a web application where people exchange skills with each other using a credit-based system instead of money. Think of it like a bartering platform, but instead of trading physical goods, you trade your time and knowledge.
+SkillBank is a web application where people exchange skills using a credit-based system instead of paying each other directly with money.
 
-For example: if you know how to play guitar, you can teach someone for 1 hour and earn 1 credit. Then you can spend that credit to learn photography from someone else for 1 hour. Nobody pays money — you trade time for time.
+The simple idea is this:
 
-Every new user starts with 1 free credit so they can begin learning right away, even before they teach anyone.
+- If you teach someone for 1 hour, you earn 1 credit.
+- If you want to learn from someone for 1 hour, you spend 1 credit.
+- So the platform turns time and knowledge into something people can trade.
 
-Users can also buy credits with real money ($15 for 1 credit, or $60 for 5 credits) and cash out credits for real money (5 credits = $50). This is how the platform makes money — the difference between what people pay and what they can cash out.
+Example:
+
+Sara knows French and wants to learn guitar. Karim knows guitar and wants to learn French. On SkillBank, Sara can teach French, earn a credit, then spend that credit to learn guitar. The platform is not trying to make every exchange happen at the exact same time between the same two people. It uses credits so the system stays flexible.
+
+Every new user starts with **1 free credit** so they can book their first learning session immediately.
+
+Users can also buy credits manually and cash out credits manually:
+
+- **Buy 1 credit:** $15
+- **Buy 5 credits:** $60, shown as 4 credits + 1 free
+- **Redeem 5 credits:** $50 payout
+
+Because automatic online payment gateways are not always practical in Lebanon, the payment/cashout process is handled through traditional methods such as WhatsApp coordination, OMT, Wish Money, bank transfer, or another manually agreed method. The app itself tracks credits, but the real-world money transfer is handled manually by the platform owner/admin.
+
+---
+
+## The Main Problem SkillBank Solves
+
+A lot of people have valuable skills, but they do not always have money to pay for lessons. At the same time, many people are willing to teach something they know if they can get something useful in return.
+
+SkillBank solves this by saying:
+
+> Your time has value. Your knowledge has value. You can use what you know to learn what you do not know yet.
+
+So instead of the platform being only about buying lessons, it becomes about skill exchange, community learning, and turning knowledge into opportunity.
 
 ---
 
 ## How Is the Project Built?
 
-The project has three separate parts that talk to each other over the internet:
+The project is split into three main technical parts:
 
-### 1. The Frontend (What Users See)
+1. **Frontend** — the website that users see.
+2. **Backend** — the Java server that handles the logic.
+3. **Database** — the PostgreSQL storage where the data is saved.
 
-This is the website itself — the pages, buttons, forms, and everything the user interacts with. It is built using:
+There are also outside services used for hosting, profile pictures, analytics, and emails.
 
-- **React** — a popular tool for building interactive websites. Instead of loading a new page every time you click something, React updates only the part of the page that changed. This makes the app feel fast and smooth.
-- **Vite** — a tool that bundles all the React code into files that browsers can understand. Think of it as a translator that turns developer code into website code.
-- **CSS** — the styling rules that control how everything looks (colors, spacing, fonts, layout).
-- **Axios** — a helper that sends requests from the frontend to the backend. When you click "Login," Axios sends your email and password to the backend and waits for a response.
+---
 
-The frontend is hosted on **Firebase Hosting** at `https://skillbank-489a8.web.app`. When you visit this URL, Firebase serves the website files to your browser.
+## 1. Frontend — What Users See
 
-### 2. The Backend (The Brain)
+The frontend is the actual website. It includes the landing page, login/register pages, dashboard, skills page, matches page, sessions page, wallet, profile, admin pages, and review pages.
 
-This is the server that handles all the logic — checking passwords, calculating balances, sending emails, matching users, and so on. The user never sees this directly. It is built using:
+It is built using:
 
-- **Spring Boot** (Java 17) — a framework for building server applications. It receives requests from the frontend (like "log me in" or "book a session"), processes them, and sends back responses.
-- **Spring Security** — handles authentication (verifying who you are) and authorization (checking what you're allowed to do). It uses JWT tokens — a special coded string that proves you're logged in, sent with every request.
-- **Hibernate** — automatically creates and manages database tables based on Java code. When the app starts, it looks at the Java classes and creates matching tables in the database if they don't exist.
-- **Lombok** — a tool that automatically writes repetitive Java code (like getters, setters, constructors) so developers don't have to type it all out manually.
+- **React** — used to build the user interface as reusable components. For example, the navbar, session card, availability grid, and review modal are all separate pieces of UI.
+- **React Router** — controls which page appears for each URL, such as `/dashboard`, `/skills`, `/matches`, or `/profile`.
+- **Vite** — the frontend build tool. It runs the React app locally during development and builds the final production files.
+- **Axios** — used to send HTTP requests from the frontend to the backend. For example, when a user logs in, Axios sends the email and password to `/api/auth/login`.
+- **Framer Motion** — used for animations, page transitions, animated cards, tab transitions, category bubbles, count-up effects, and smooth UI movement.
+- **Three.js / React Three Fiber** — used for the 3D animated background/orb visuals.
+- **Firebase SDK** — used for Firebase Analytics and Firebase Storage.
+- **Custom CSS** — most of the app styling is written in `frontend/src/index.css`.
+- **Small TypeScript UI components** — some UI pieces like the AI chat mockup use `.tsx` components.
 
-The backend is hosted on **Render** at `https://skillbank-api.onrender.com`. It runs inside a Docker container (a lightweight virtual computer that has everything the app needs to run).
+The frontend is hosted on **Firebase Hosting** at:
 
-### 3. The Database (The Memory)
-
-This is where all the data is permanently stored — user accounts, skills, sessions, transactions, and everything else. It uses:
-
-- **PostgreSQL** — a relational database, which means data is stored in tables with rows and columns (like Excel spreadsheets), and tables can reference each other.
-
-The database is hosted on **Neon** (a cloud PostgreSQL service). The backend connects to it using a connection string (like a URL with a password).
-
-### How They Connect
-
+```text
+https://skillbank-489a8.web.app
 ```
+
+There is also Vercel configuration in the project, and the backend CORS config allows the Vercel deployment as a backup frontend origin.
+
+---
+
+## 2. Backend — The Brain
+
+The backend is the server that receives requests, checks rules, talks to the database, and sends responses back to the frontend.
+
+It is built using:
+
+- **Java 17** — the programming language/runtime used by the backend.
+- **Spring Boot 3.2.5** — the main backend framework.
+- **Spring Web** — allows the backend to create API endpoints like `/api/sessions` and `/api/users/me`.
+- **Spring Security** — protects private endpoints and checks JWT tokens.
+- **Spring Data JPA / Hibernate** — maps Java classes to PostgreSQL database tables.
+- **PostgreSQL Driver** — allows Spring Boot to connect to a PostgreSQL database.
+- **JWT (jjwt)** — creates and verifies login tokens.
+- **Lombok** — reduces repetitive Java code like getters, setters, constructors, and builders.
+- **Bean Validation** — validates request fields, such as making sure email is formatted correctly and passwords have a minimum length.
+
+The backend is hosted on **Render** at:
+
+```text
+https://skillbank-api.onrender.com
+```
+
+The frontend calls backend endpoints like:
+
+```text
+https://skillbank-api.onrender.com/api/auth/login
+https://skillbank-api.onrender.com/api/sessions
+https://skillbank-api.onrender.com/api/users/me
+```
+
+The backend runs inside a Docker container in production.
+
+---
+
+## 3. Database — The Memory
+
+The app uses **PostgreSQL**.
+
+PostgreSQL stores permanent data such as:
+
+- User accounts
+- Password hashes
+- Profile information
+- Skills and categories
+- User skill listings
+- Availability slots
+- Sessions
+- Credit transactions
+- Reviews
+- Disputes
+- Referral codes
+
+In production, the PostgreSQL database is hosted on **Neon**.
+
+The backend does not manually create every database table using SQL files. Instead, Hibernate reads the Java entity classes and creates/updates the database tables based on them because this is enabled in `application.properties`:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+This means the database structure follows the Java model classes.
+
+---
+
+## How the Whole System Connects
+
+```text
 User's Browser
-    │
-    │ visits https://skillbank-489a8.web.app
-    │
-    ▼
-Firebase Hosting (serves the website files)
-    │
-    │ website makes API calls to the backend
-    │
-    ▼
-Render (runs the Spring Boot backend)
-    │
-    │ backend reads/writes data
-    │
-    ▼
-Neon (PostgreSQL database)
+    |
+    | visits
+    v
+Firebase Hosting
+    |
+    | serves the React frontend
+    v
+React Website
+    |
+    | sends API requests using Axios
+    v
+Render Backend
+    |
+    | reads/writes data
+    v
+Neon PostgreSQL Database
 ```
 
-Every time the frontend needs data (like "show me my profile"), it sends a request to the backend at `https://skillbank-api.onrender.com/api/...`. The backend checks the database, processes the request, and sends back the result as JSON (a structured text format that computers use to exchange data).
+A simple example:
+
+1. The user opens the website.
+2. Firebase Hosting sends the React app to the browser.
+3. The user clicks “Login”.
+4. React sends the email/password to the Spring Boot backend.
+5. The backend checks the database.
+6. If the login is valid, the backend returns a JWT token.
+7. The frontend stores the token and uses it for future requests.
 
 ---
 
-## Additional Services
+## Extra Services Used
 
-### Firebase (Google)
+### Firebase Hosting
 
-Firebase provides three extra features on top of the core app:
+Used to host the frontend website.
 
-- **Firebase Hosting** — serves the frontend website to users.
-- **Firebase Analytics** — tracks how users interact with the app (which pages they visit, what buttons they click). This data helps understand user behavior. It is initialized in `frontend/src/firebase.js` and imported in `main.jsx`.
-- **Firebase Storage** — stores profile pictures that users upload. When a user uploads a photo, it goes directly from their browser to Firebase Storage (not through the backend). Firebase returns a URL for that photo, and the backend saves that URL in the database.
+### Firebase Analytics
 
-### Gmail SMTP
+Used to collect basic analytics about how users use the app. It is initialized in:
 
-The app sends emails using a Gmail account. "SMTP" is the protocol (set of rules) that computers use to send emails. The backend uses this to send:
+```text
+frontend/src/firebase.js
+```
 
-- Email verification links when users register
-- Password reset links when users forget their password
-- Session booking notifications to teachers
-- Session confirmation/rejection notifications to learners
-- Auto-cancellation notices when sessions expire
-- Session reminders 2 hours before a scheduled session (to both teacher and learner)
-- Referral bonus notifications when someone joins using a referral code
+### Firebase Storage
+
+Used to store profile pictures.
+
+When a user uploads a profile picture:
+
+1. The browser uploads the image directly to Firebase Storage.
+2. Firebase returns a public download URL.
+3. The frontend sends that URL to the backend.
+4. The backend saves the URL in the user's profile record.
+5. Other users can now see that profile picture.
+
+### Brevo Email API
+
+The app now uses **Brevo's HTTP email API** for sending emails.
+
+This replaced the older Gmail SMTP explanation. The backend does not use Gmail SMTP settings anymore. It sends email by making an HTTP request to Brevo:
+
+```text
+https://api.brevo.com/v3/smtp/email
+```
+
+The email logic is inside:
+
+```text
+src/main/java/com/skillbank/email/EmailService.java
+```
+
+The app sends emails for:
+
+- Email verification
+- Password reset
+- New session request notification
+- Session confirmed notification
+- Session rejected notification
+- Auto-cancelled session notification
+- Session reminder 2 hours before the session
+- Referral bonus notification
+
+Important detail:
+
+- Verification emails and password reset emails are sent synchronously because they are critical.
+- Other notification emails use `@Async`, which means they are sent in the background after the main request continues.
 
 ---
 
-## Database Tables
+## Main User Roles
 
-The database has these tables. Each table stores a different type of information:
+SkillBank has two roles:
 
-### users
+### USER
 
-Stores every registered person's account information.
+A normal user can:
 
-| Column | What It Stores |
-|--------|---------------|
-| id | A unique number assigned to each user (1, 2, 3, etc.) |
-| name | The user's full name |
-| email | Their email address (must be unique — no two users can have the same email) |
-| password_hash | Their password, but scrambled so nobody can read it (even database admins). When they log in, the system scrambles what they typed and compares it to the stored scramble |
-| bio | A short description about themselves |
-| city | Where they're located |
-| phone_number | Their phone number |
-| profile_pic_url | A link to their profile picture stored in Firebase Storage |
-| email_verified | Whether they clicked the verification link in their email (true/false) |
-| verification_token | A random code sent in the verification email. Once they click the link, this is cleared |
-| reset_token | A random code sent in the password reset email. Expires after 1 hour |
-| reset_token_expiry | When the reset token expires |
-| referral_code | A unique code like "ALI-A3F2C8" that other users can use when registering to earn both parties a bonus credit |
-| referred_by | The ID of the user who referred this person (null if no referral was used) |
-| role | Either USER or ADMIN. Admins see a completely different dashboard with platform management tools instead of the regular user interface |
-| created_at | When they created their account |
+- Register and verify email
+- Log in
+- Edit their profile
+- Upload a profile picture
+- Add skills they can teach
+- Add skills they want to learn
+- Set weekly availability
+- Search for other users
+- Book sessions
+- Confirm/reject sessions if they are the teacher
+- File a dispute if they are the learner
+- Review others after completed sessions
+- Buy/redeem credits manually through WhatsApp
+- Invite friends using referral links
+- Delete their own account
 
-### skills
+### ADMIN
 
-The master list of all skills available on the platform.
+An admin can:
 
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique skill number |
-| name | The skill name (e.g., "Python Programming," "Guitar") |
-| category_id | Which category this skill belongs to (links to skill_categories table) |
-| custom | Whether this skill was created by a user (true) or came pre-loaded (false) |
-| created_by | The user who created this custom skill (if applicable) |
+- View platform statistics
+- View/search all users
+- View/search/filter all sessions
+- Add credits after manual purchases
+- Deduct credits after manual redemptions
+- Resolve disputes
 
-### skill_categories
-
-Groups skills into broad categories for organization.
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique category number |
-| name | Category name (e.g., "Technology & Programming," "Music," "Languages") |
-
-The app comes pre-loaded with 20 categories (set up by the DataInitializer when the app first starts).
-
-### user_skills
-
-Records which skills each user has and whether they teach or want to learn them.
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique entry number |
-| user_id | Which user this belongs to |
-| skill_id | Which skill this is about |
-| type | Either OFFER (they can teach this) or SEEK (they want to learn this) |
-| level | Their skill level: BEGINNER, INTERMEDIATE, or ADVANCED |
-| description | Extra details about their experience with this skill |
-
-### skill_tags
-
-Links skills to searchable tags (a many-to-many relationship — one skill can have many tags, and one tag can be on many skills).
-
-### sessions
-
-Records every teaching session between two users.
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique session number |
-| teacher_id | The user who is teaching |
-| learner_id | The user who is learning |
-| skill_id | What skill is being taught |
-| scheduled_at | When the session is scheduled for (date and time) |
-| duration_minutes | How long the session lasts (always 60 minutes) |
-| status | The current state of the session (see Session Lifecycle below) |
-| notes | Any notes the learner added when booking |
-| reminder_sent | Whether the 2-hour reminder email has already been sent for this session (true/false). Prevents duplicate reminders |
-| created_at | When the session was booked |
-
-### availability_slots
-
-Records when each teacher is available for sessions. Each slot represents one hour on a specific day of the week (recurring weekly).
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique slot number |
-| user_id | Which user this availability belongs to |
-| day_of_week | Which day (MONDAY, TUESDAY, etc.) |
-| hour | Which hour (0-23, where 0 = midnight, 13 = 1 PM) |
-
-### time_transactions
-
-Records every credit movement in the system. This is how the app tracks everyone's balance.
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique transaction number |
-| from_user_id | Who the credits came from (null if credits were added by the system) |
-| to_user_id | Who received the credits (null if credits were deducted) |
-| session_id | Which session this transaction is related to (null for purchases/redemptions) |
-| hours | How many credits were moved |
-| type | What kind of transaction (see Credit System below) |
-| created_at | When this transaction happened |
-
-### reviews
-
-Records ratings and feedback left after completed sessions. Each user can only leave one review per session — enforced by a unique constraint on (session_id, reviewer_id).
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique review number |
-| session_id | Which session this review is about |
-| reviewer_id | The user who wrote the review |
-| reviewee_id | The user being reviewed |
-| type | TEACHING (a learner reviewing the teacher's teaching ability) or LEARNING (a teacher reviewing the learner's engagement) |
-| rating | A score from 1 to 5 stars |
-| comment | Optional written feedback about the experience |
-| teacher_on_time | Whether the teacher showed up on time — yes or no (only filled in when a learner reviews a teacher) |
-| content_useful | Whether the session content was useful — yes or no (only filled in when a learner reviews a teacher) |
-| would_recommend | Whether the reviewer would recommend this person to others — yes or no |
-| created_at | When the review was submitted |
-
-### dispute_reports
-
-Records complaints filed by learners about sessions that didn't go as expected.
-
-| Column | What It Stores |
-|--------|---------------|
-| id | Unique dispute number |
-| session_id | Which session is being disputed |
-| filed_by_id | The learner who filed the complaint |
-| reason | Why they're disputing (e.g., "Teacher didn't show up") |
-| status | OPEN, RESOLVED_REFUND, or RESOLVED_RELEASE |
-| resolved_by_id | The admin who resolved it |
-| admin_notes | The admin's notes about the resolution |
-| created_at | When the dispute was filed |
-| resolved_at | When the dispute was resolved |
+Admins do not use the normal user flow. When an admin logs in, the navbar changes to admin pages only.
 
 ---
 
-## How Each Feature Works
+## Database Tables Explained
 
-### User Registration and Email Verification
+The database is made of tables. A table is like an Excel sheet: columns describe what each row stores, and each row is one record.
 
-**What happens when someone creates an account:**
+### `users`
 
-1. User fills out the registration form (name, email, password, city, bio, phone, and optionally a referral code).
-2. The frontend sends this information to `POST /api/auth/register`.
-3. The backend checks if the email is already taken. If yes, it returns an error.
-4. The backend scrambles the password using BCrypt (a one-way scrambling algorithm — you can scramble "hello123" into "$2a$10$xyz..." but you can never reverse it back to "hello123").
-5. The backend creates a random verification token (a long random string like "a4f2c8e1-...").
-6. The backend generates a unique referral code for the new user (like "ALI-A3F2C8") so they can invite others later.
-7. The backend saves the new user to the database with `emailVerified = false`.
-8. The backend gives the user 1 free credit (by creating a PURCHASE transaction).
-9. If a valid referral code was provided, both the new user and the referrer receive 1 bonus credit, and the referrer gets an email notification telling them someone joined using their code.
-10. The backend sends a verification email containing a link like `https://skillbank-489a8.web.app/verify?token=a4f2c8e1-...`. This email is sent synchronously (not in a background thread) to ensure it actually sends before the registration response is returned.
-11. The frontend shows "Check your email" instead of logging them in.
+Stores every registered user account.
 
-**What happens when they click the verification link:**
+| Column | What It Stores |
+|---|---|
+| `id` | Unique user number |
+| `name` | User's display/full name |
+| `email` | Login email, must be unique |
+| `password_hash` | The BCrypt-hashed password, not the readable password |
+| `bio` | Short profile description |
+| `city` | User's location/city |
+| `phone_number` | User's phone number |
+| `contact_email` | Optional public contact email shown on profile |
+| `linkedin_url` | Optional LinkedIn link shown on profile |
+| `social_media_url` | Optional social media link shown on profile |
+| `profile_pic_url` | Firebase Storage image URL |
+| `email_verified` | Whether the user clicked the verification email |
+| `verification_token` | Random token used for email verification |
+| `reset_token` | Random token used for password reset |
+| `reset_token_expiry` | When the reset token expires |
+| `referral_code` | User's unique invite/referral code |
+| `referred_by` | ID of the user who referred this user, if any |
+| `role` | `USER` or `ADMIN` |
+| `created_at` | When the account was created |
 
-1. The browser opens `/verify?token=a4f2c8e1-...`.
-2. The frontend sends a request to `GET /api/auth/verify?token=a4f2c8e1-...`.
-3. The backend looks for a user with that token in the database.
-4. If found, it sets `emailVerified = true` and clears the token.
-5. The frontend shows "Email Verified" with a link to sign in.
+### `skill_categories`
 
-### Login and Authentication
+Stores broad skill categories.
 
-**What happens when someone logs in:**
+The project seeds 20 categories automatically when the database is empty:
 
-1. User enters their email and password.
-2. The frontend sends this to `POST /api/auth/login`.
-3. The backend finds the user by email, scrambles the password they typed, and compares it to the stored scramble.
-4. If the password is wrong, it returns "Invalid email or password."
-5. If the email isn't verified, it returns "EMAIL_NOT_VERIFIED" and the frontend shows a "Resend verification email" option.
-6. If everything is correct, the backend creates a JWT token — a long encoded string that contains the user's ID, email, and an expiration time (24 hours). This token is "signed" with a secret key so nobody can fake it.
-7. The frontend stores this token in the browser's localStorage (a place where websites can save small pieces of data that persist even if you close the browser).
-8. From now on, every request the frontend makes includes this token in the "Authorization" header. The backend reads the token, verifies its signature, and knows who is making the request.
+- Technology & Programming
+- Engineering
+- Science & Mathematics
+- Languages
+- Music
+- Sports & Fitness
+- Arts & Crafts
+- Design & Architecture
+- Cooking & Nutrition
+- Business & Finance
+- Writing & Literature
+- Photography & Video
+- Board Games & Chess
+- Health & Wellness
+- DIY & Home Improvement
+- Education & Tutoring
+- History & Culture
+- Performing Arts
+- Outdoor Skills
+- Social Sciences
 
-**How JWT tokens work (simplified):**
+### `skills`
 
-Think of a JWT token like a stamped wristband at a concert. When you show your ticket (password) at the gate (login), they give you a wristband (token). For the rest of the night, you just show the wristband to get into any area (API endpoint). The wristband has a holographic stamp (signature) that can't be faked, and it expires when the concert is over (24 hours).
+Stores the master skill catalog.
 
-### Forgot Password and Reset
+| Column | What It Stores |
+|---|---|
+| `id` | Unique skill number |
+| `name` | Skill name, like Python, Guitar, Chess, Photography |
+| `category_id` | Which category this skill belongs to |
+| `custom` | Whether this skill was created by a user |
+| `created_by` | Which user created the custom skill, if any |
 
-**What happens when someone forgets their password:**
+### `user_skills`
 
-1. User clicks "Forgot password?" on the login page.
-2. They enter their email and the frontend sends it to `POST /api/auth/forgot-password`.
-3. The backend looks for a user with that email. If found, it creates a random reset token and sets it to expire in 1 hour.
-4. The backend sends an email with a link like `https://skillbank-489a8.web.app/reset-password?token=b5g3d9f2-...`.
-5. The backend always responds "If that email exists, a reset link has been sent" — it never reveals whether the email exists or not (for security).
+Connects users to skills.
 
-**What happens when they click the reset link:**
+A skill can be listed in two ways:
 
-1. The browser opens `/reset-password?token=b5g3d9f2-...`.
-2. User enters a new password (twice, to confirm).
-3. The frontend sends the token and new password to `POST /api/auth/reset-password`.
-4. The backend verifies the token exists and hasn't expired.
-5. It scrambles the new password and saves it, then clears the reset token.
+- `OFFER` means “I can teach this.”
+- `SEEK` means “I want to learn this.”
 
-### Skills System
+| Column | What It Stores |
+|---|---|
+| `id` | Unique listing number |
+| `user_id` | Which user owns this listing |
+| `skill_id` | Which skill is being listed |
+| `type` | `OFFER` or `SEEK` |
+| `level` | `BEGINNER`, `INTERMEDIATE`, or `ADVANCED` |
+| `description` | Optional extra explanation |
 
-Users can list skills in two ways:
+The backend prevents a user from adding the same skill twice with the same type.
 
-- **OFFER** — "I can teach this." They must specify their level (Beginner, Intermediate, or Advanced).
-- **SEEK** — "I want to learn this." No level needed.
+### `tags` and `skill_tags`
 
-**Adding a skill:**
+Skills can have tags.
 
-1. User goes to the Skills page and clicks "Add Skill."
-2. They pick a category (e.g., "Music"), type the skill name (e.g., "Piano"), choose Teach or Learn, and pick their level.
-3. The frontend sends this to `POST /api/skills/my`.
-4. The backend checks if a skill with that name already exists in that category. If not, it creates a new custom skill.
-5. It creates a UserSkill entry linking the user to the skill with their chosen type and level.
-6. Users can't add the same skill twice with the same type (you can't list "Piano" as "Teach" twice, but you can list it as both "Teach" and "Learn").
+Example:
 
-**Browsing skills:**
-
-The Skills page has a "Browse All" tab that shows every skill in the catalog. Users can search by name or filter by category. This uses the `GET /api/skills/all` endpoint to load all skills, or `GET /api/skills/search?q=...` for searching, or `GET /api/skills/category/{id}` for category filtering.
-
-**Tags:**
-
-Skills can have tags — extra keywords that help with searching. Tags are stored in a separate table and linked to skills through the `skill_tags` table. If a tag doesn't exist yet, it's automatically created.
-
-### Matching System
-
-The matching system finds other users you can exchange skills with. It works in three modes, shown as tabs in the order they appear:
-
-**All Users:**
-
-A searchable directory of every verified user on the platform (unverified users and admins are hidden). You can search by username, skill name, category, or tag. The search updates as you type with a small delay to avoid excessive requests. Each user card shows their "Teachable Skills" and "Learnable Skills." This is the default tab when opening the Matches page.
-
-**One-Way Matches ("They teach me"):**
-
-Users who offer skills you want to learn, regardless of whether they need anything from you. You'd still need credits to book a session with them.
-
-**Mutual Matches:**
-
-These are the best matches — people where both sides benefit. For example, if you teach Guitar and want to learn Cooking, and another user teaches Cooking and wants to learn Guitar, that's a mutual match.
-
-The system finds these by looking at all users who offer skills you're seeking AND who are seeking skills you offer.
-
-### Availability and Booking
-
-**Setting availability (teacher side):**
-
-1. Teacher goes to their Profile page and sees a grid with days of the week as columns and hours as rows.
-2. They click cells to mark when they're available. Each click toggles a cell green (available) or empty (not available).
-3. Each click sends a `POST /api/availability/toggle` request that either creates or deletes an availability slot.
-4. If a slot has an active booking (PENDING or CONFIRMED session), the teacher cannot remove it. The cell shows red instead of green.
-
-**Booking a session (learner side):**
-
-1. Learner visits a teacher's profile and sees their availability grid.
-2. Green cells are available and clickable. Red cells are booked and cannot be clicked.
-3. Clicking a green cell opens a booking form where the learner picks which skill to learn, confirms the date/time, and adds optional notes.
-4. The frontend sends a `POST /api/sessions` request.
-5. The backend verifies:
-   - The learner isn't booking themselves.
-   - The session is at least 24 hours away.
-   - The time slot doesn't overlap with another active session for that teacher.
-   - The learner has enough credits.
-6. If all checks pass, the backend creates the session as PENDING and holds 1 credit from the learner's balance (escrow).
-7. The teacher gets an email notification about the new booking.
-
-### Session Lifecycle
-
-Every session goes through a series of states:
-
-```
-PENDING → CONFIRMED → COMPLETED (normal flow)
-PENDING → CANCELLED (teacher rejects or 24h auto-cancel)
-CONFIRMED → DISPUTED → RESOLVED_REFUND or RESOLVED_RELEASE
+```text
+Skill: Python
+Tags: beginner-friendly, backend, coding, projects
 ```
 
-**PENDING:**
+Tags make search better because users can search not only by skill name, but also by related keywords.
 
-The session was just booked. 1 credit is held in escrow (taken from the learner's available balance but not yet given to the teacher). The teacher must confirm or reject before the session time.
+`skill_tags` is the join table that connects many skills to many tags.
 
-**CONFIRMED:**
+### `availability_slots`
 
-The teacher accepted the session. Both parties should show up at the scheduled time. An "Add to Google Calendar" button appears on the session card (see Google Calendar Integration below). A reminder email is sent to both parties 2 hours before the session.
+Stores weekly availability for teachers.
 
-**COMPLETED:**
+Each slot is one hour on one day of the week.
 
-After the session ends (the scheduled time + duration has passed), the system automatically releases the held credit to the teacher. This happens through a scheduled task that runs every 60 seconds. Both parties can then leave a review for each other.
+| Column | What It Stores |
+|---|---|
+| `id` | Unique slot number |
+| `user_id` | Which teacher this availability belongs to |
+| `day_of_week` | Monday, Tuesday, etc. |
+| `hour` | The hour of the day, using 24-hour format |
 
-**CANCELLED:**
+Valid hours are from **6 AM until 1 AM**.
 
-The teacher rejected the session, OR the teacher didn't respond in time. If a session is still PENDING when it's less than 24 hours away from the scheduled time, a scheduled task automatically cancels it. In both cases, the held credit is returned to the learner.
+The slots are recurring weekly. If a teacher marks Monday 6 PM as available, that means they are generally available on Mondays at 6 PM.
 
-**DISPUTED:**
+### `sessions`
 
-The learner reported a problem (e.g., the teacher didn't show up). Disputes can only be filed during the session window (between the start time and end time). Once disputed, the session is frozen until an admin resolves it.
+Stores booked teaching/learning sessions.
 
-**RESOLVED_REFUND:**
+| Column | What It Stores |
+|---|---|
+| `id` | Unique session number |
+| `teacher_id` | User who teaches |
+| `learner_id` | User who learns |
+| `skill_id` | Skill being taught |
+| `scheduled_at` | Date and time of the session |
+| `duration_minutes` | Usually 60 minutes |
+| `status` | Current state of the session |
+| `notes` | Optional learner notes |
+| `reminder_sent` | Whether the 2-hour reminder was already sent |
+| `created_at` | When the session was created |
 
-An admin reviewed the dispute and sided with the learner. The held credit is returned to the learner.
+Possible session statuses:
 
-**RESOLVED_RELEASE:**
-
-An admin reviewed the dispute and sided with the teacher. The held credit is given to the teacher.
-
-### Reviews and Ratings
-
-After a session is completed, both the teacher and the learner can leave a review for each other. Reviews are separated by role so users build two distinct reputations:
-
-**Teaching Reviews** — left by learners about the teacher. These include a 1-5 star rating, an optional written comment, and three yes/no feedback questions: "Did the teacher show up on time?", "Was the content useful?", and "Would you recommend this teacher?"
-
-**Learning Reviews** — left by teachers about the learner. These include a 1-5 star rating, an optional written comment, and a "Would you recommend this learner?" question.
-
-Each user's profile displays their average teaching rating (with the number of teaching reviews) and average learning rating (with the number of learning reviews), along with the total number of sessions they've taught and learned. This helps other users decide who to learn from or teach.
-
-A "Leave a Review" button appears on completed session cards. Once a review is submitted, the button changes to "Reviewed." Each person can only review a given session once — this is enforced by a database constraint.
-
-### Credit System (Escrow)
-
-The credit system uses an escrow model. "Escrow" means a trusted middle-man holds onto something during a transaction.
-
-**How balances are calculated:**
-
-Instead of storing a single "balance" number, the system records every credit movement as a transaction. To find a user's balance, it adds up all credits they've received and subtracts all credits they've spent:
-
-```
-Balance = (sum of credits received) - (sum of credits spent)
+```text
+PENDING
+CONFIRMED
+COMPLETED
+CANCELLED
+DISPUTED
+REFUNDED
 ```
 
-Credits received include: initial 1 free credit (PURCHASE), referral bonuses (PURCHASE), credits from admin after buying (PURCHASE), credits from completed sessions where they taught (ESCROW_RELEASE), refunds from cancelled sessions (ESCROW_REFUND).
+### `time_transactions`
 
-Credits spent include: credits held when booking a session (ESCROW_HOLD), credits deducted when redeeming for cash (REDEMPTION).
+Stores every credit movement.
 
-**Transaction types explained:**
+The app does not rely on one simple `balance` column. Instead, it records transactions, then calculates balance from the transaction history.
 
-| Type | What It Means | Effect on Balance |
-|------|--------------|-------------------|
-| PURCHASE | Credits were added (new user bonus, referral bonus, or admin added after payment) | +credits to user |
-| ESCROW_HOLD | Credits were frozen when booking a session | -credits from learner |
-| ESCROW_RELEASE | Credits were given to teacher after session completed | +credits to teacher |
-| ESCROW_REFUND | Credits were returned to learner after cancellation | +credits to learner |
-| REDEMPTION | Credits were deducted when user cashed out | -credits from user |
+| Column | What It Stores |
+|---|---|
+| `id` | Unique transaction number |
+| `from_user_id` | User who lost/spent credits, if any |
+| `to_user_id` | User who gained/received credits, if any |
+| `session_id` | Session connected to the transaction, if any |
+| `hours` | Credit amount |
+| `type` | Why the transaction happened |
+| `created_at` | When it happened |
 
-### Buying and Redeeming Credits (Wallet)
+Transaction types:
 
-Because automated payment gateways like Stripe don't support Lebanon, the buying and redeeming process is handled manually through WhatsApp:
+| Type | Meaning |
+|---|---|
+| `PURCHASE` | Credits added to a user, including signup bonus, referral bonus, or admin-added purchase |
+| `ESCROW_HOLD` | Credit held from the learner when booking |
+| `ESCROW_RELEASE` | Credit released to the teacher after successful completion |
+| `ESCROW_REFUND` | Credit refunded to learner after cancellation/dispute refund |
+| `REDEMPTION` | Credits deducted when user cashes out |
 
-**Buying credits:**
+### `reviews`
 
-1. User goes to the Wallet page and picks a package ($15 for 1 credit or $60 for 5 credits — presented as "4 + 1 free").
-2. Clicking "Buy via WhatsApp" opens WhatsApp with a pre-filled message containing their account details and the chosen package.
-3. The user sends the message to the platform owner.
-4. The user pays via OMT, Wish Money, or bank transfer.
-5. The platform owner (admin) logs into the app, goes to Admin → Credits, enters the user's email and the number of credits to add, and clicks "Add."
-6. The backend creates a PURCHASE transaction and the user's balance updates immediately.
+Stores ratings and feedback after completed sessions.
 
-**Redeeming credits:**
+Each user can only review a session once. This is enforced using a database unique constraint on:
 
-1. User goes to the Wallet page → Redeem tab.
-2. They need at least 5 credits to redeem. Clicking "Redeem via WhatsApp" opens WhatsApp with a pre-filled message.
-3. The platform owner verifies the request, sends $50 to the user via OMT, Wish Money, or bank transfer.
-4. The owner goes to Admin → Credits, enters the user's email and "5" as the amount, and clicks "Deduct."
-5. The backend creates a REDEMPTION transaction and the user's balance decreases by 5.
+```text
+session_id + reviewer_id
+```
 
-### Profile Pictures
+| Column | What It Stores |
+|---|---|
+| `id` | Unique review number |
+| `session_id` | Which session was reviewed |
+| `reviewer_id` | Person writing the review |
+| `reviewee_id` | Person receiving the review |
+| `type` | `TEACHING` or `LEARNING` |
+| `rating` | 1 to 5 stars |
+| `comment` | Optional written feedback |
+| `teacher_on_time` | Boolean feedback field |
+| `content_useful` | Boolean feedback field |
+| `would_recommend` | Boolean feedback field |
+| `created_at` | When the review was written |
 
-Profile pictures are stored using Firebase Storage:
+The same three boolean fields are stored for both teaching and learning reviews, but the frontend labels them differently depending on whether the user is reviewing a teacher or a learner.
 
-1. User clicks on their avatar on their profile page.
-2. A file picker opens and they select an image.
-3. The frontend uploads the image directly to Firebase Storage (it goes straight to Google's servers, not through our backend).
-4. Firebase returns a URL like `https://firebasestorage.googleapis.com/v0/b/skillbank.../profile-pictures/123_1234567890`.
-5. The frontend sends this URL to the backend via `PATCH /api/users/me` with `profilePicUrl`.
-6. The backend saves the URL in the user's database record.
-7. Now every time someone views this user's profile, the backend returns the URL and the browser loads the image from Firebase.
+### `dispute_reports`
 
-### Referral System
+Stores reports filed by learners when a session goes wrong.
 
-Every user gets a unique referral code when they register (like "ALI-A3F2C8"). The user dashboard shows this code with a "Copy Link" button that copies a shareable registration URL (like `https://skillbank-489a8.web.app/register?ref=ALI-A3F2C8`).
+| Column | What It Stores |
+|---|---|
+| `id` | Unique dispute number |
+| `session_id` | Which session is disputed |
+| `filed_by_id` | Learner who filed the dispute |
+| `reason` | Learner's explanation |
+| `status` | `OPEN`, `RESOLVED_REFUND`, or `RESOLVED_RELEASE` |
+| `resolved_by_id` | Admin who resolved the dispute |
+| `admin_notes` | Admin explanation/notes |
+| `created_at` | When the dispute was filed |
+| `resolved_at` | When the dispute was resolved |
 
-When someone registers with a referral code — either by typing it into the registration form or by clicking a referral link — both the referrer and the new user receive 1 bonus credit. The referrer also gets an email notification telling them someone joined using their code.
+Important difference:
 
-### Profile Completion Prompt
-
-The user dashboard shows a profile completion progress bar when the profile is not 100% complete. It tracks six items: name, bio, city, phone number, skills listed, and availability set. Each missing item is shown as a clickable link that takes the user to the right page to fill it in. The progress bar and hints disappear once the profile is fully complete.
-
-### Session Reminders
-
-A background task runs every 60 seconds checking for CONFIRMED sessions that are within 2 hours of their scheduled time and haven't had a reminder sent yet. When found, it sends reminder emails to both the teacher and the learner with the session details. Each session is only reminded once — the `reminderSent` flag is set to true after sending, preventing duplicate emails.
-
-### Google Calendar Integration
-
-When a session is CONFIRMED, an "Add to Google Calendar" button appears on the session card. Clicking it opens Google Calendar in a new tab with the session details pre-filled (skill name, teacher and learner names, time, and any notes). This is done through a simple URL — no OAuth login or API integration is needed. The user just clicks and the event is created in their Google Calendar.
-
-### Dispute System
-
-If something goes wrong with a session (teacher doesn't show up, session quality was poor, etc.), the learner can file a dispute:
-
-1. During a CONFIRMED session (between the start time and end time), a "Report No-Show" button appears on the session card.
-2. The learner clicks it and describes the issue.
-3. The frontend sends a `POST /api/disputes` request.
-4. The backend changes the session status to DISPUTED and creates a dispute report.
-5. An admin sees the dispute in Admin → Disputes.
-6. The admin reads the reason and decides:
-   - **Refund Learner** — the credit goes back to the learner.
-   - **Pay Teacher** — the credit goes to the teacher.
-7. Both parties are notified of the resolution.
-
-### Automatic Background Tasks (Schedulers)
-
-Three tasks run automatically every 60 seconds in the background:
-
-**Auto-cancel unconfirmed sessions:**
-
-Checks for any session that is still PENDING and whose scheduled time is less than 24 hours away. These sessions are automatically cancelled, the learner's credit is refunded, and both parties receive an email notification.
-
-**Auto-release completed sessions:**
-
-Checks for any CONFIRMED session whose end time has passed and has no open dispute. These sessions are automatically marked as COMPLETED and the held credit is released to the teacher.
-
-**Send session reminders:**
-
-Checks for any CONFIRMED session whose scheduled time is within the next 2 hours and hasn't had a reminder sent yet. Sends reminder emails to both the teacher and the learner, then marks the session as reminded so it won't be reminded again.
-
-### Admin Panel
-
-Admins see a completely different interface from regular users. When logged in as an admin, the navigation bar changes to show admin-specific pages instead of the regular user pages (Dashboard, Skills, Sessions, Matches, Wallet, Profile). Admins cannot book sessions or manage their own skills — their role is purely platform management.
-
-**Overview (Admin Dashboard):** Shows platform-wide statistics at a glance — total registered users, total sessions, total skills in the catalog, total skill listings, and total transactions. Below the stats are quick-link cards to each admin section.
-
-**Users:** A searchable table of every registered user on the platform. Shows their name, email, city, role, email verification status, credit balance, and join date. The admin can search by name, email, or city.
-
-**Sessions:** A complete list of every session on the platform with filters by status (All, Pending, Confirmed, Completed, Cancelled, Disputed). Shows session ID, skill, teacher and learner names and emails, scheduled date and time, status, and creation date.
-
-**Credits:** A dedicated page for adding or deducting credits. The admin enters a user's email and the number of credits to add (after a purchase) or deduct (after a redemption). Includes a quick reference card showing the pricing: $15 per credit, $60 for 5 credits, $50 payout per 5 credits redeemed.
-
-**Disputes:** Shows all open disputes. The admin can read the learner's complaint and choose to either refund the learner or pay the teacher, with optional admin notes explaining the decision.
+- `dispute_reports.status` can become `RESOLVED_REFUND` or `RESOLVED_RELEASE`.
+- `sessions.status` becomes `REFUNDED` if the learner is refunded.
+- `sessions.status` becomes `COMPLETED` if the teacher is paid after dispute resolution.
 
 ---
 
-## Frontend Pages Explained
+## User Registration and Email Verification
 
-### Public Pages (No Login Required)
+### What happens when a user registers
+
+1. The user fills in name, email, password, city, bio, phone number, and optional referral code.
+2. The frontend sends the data to:
+
+```text
+POST /api/auth/register
+```
+
+3. The backend checks if the email is already registered.
+4. The backend hashes the password using BCrypt.
+5. The backend creates a random email verification token.
+6. The backend generates a unique referral code for the new user.
+7. If a referral code was entered, the backend checks that it exists.
+8. The backend saves the user with `emailVerified = false`.
+9. The backend gives the user 1 free credit.
+10. If the referral code was valid, both users get 1 bonus credit.
+11. The backend sends a verification email through Brevo.
+12. The frontend shows a “Check your email” screen.
+
+The backend response intentionally returns no login token on registration. The user must verify their email first, then log in.
+
+### What happens when the user clicks the verification link
+
+1. The email link opens:
+
+```text
+/verify?token=...
+```
+
+2. The frontend sends the token to:
+
+```text
+GET /api/auth/verify?token=...
+```
+
+3. The backend finds the user with that token.
+4. The backend sets `emailVerified = true`.
+5. The backend clears the verification token.
+6. The user can now log in.
+
+### Resending verification email
+
+If the user tries to log in before verifying their email, the login page shows a resend option.
+
+That calls:
+
+```text
+POST /api/auth/resend-verification
+```
+
+The backend creates a fresh verification token and sends a new email.
+
+---
+
+## Login and Authentication
+
+SkillBank uses JWT-based login.
+
+A JWT is like a digital wristband. Once the user logs in successfully, the backend gives them a token. After that, the frontend sends the token with each private request so the backend knows who the user is.
+
+### Login flow
+
+1. User enters email and password.
+2. Frontend sends:
+
+```text
+POST /api/auth/login
+```
+
+3. Backend checks the email and password.
+4. Backend checks that the email is verified.
+5. Backend creates a JWT token valid for 24 hours.
+6. Frontend stores the token in `localStorage`.
+7. Axios automatically attaches the token to later requests:
+
+```text
+Authorization: Bearer <token>
+```
+
+If a request returns `401`, the Axios response interceptor clears local storage and redirects the user to `/login`.
+
+---
+
+## Password Reset
+
+### Forgot password
+
+1. User goes to `/forgot-password`.
+2. User enters their email.
+3. Frontend sends:
+
+```text
+POST /api/auth/forgot-password
+```
+
+4. Backend creates a reset token that expires after 1 hour.
+5. Backend emails a reset link.
+6. Backend always returns the same message so it does not reveal whether an email exists.
+
+### Reset password
+
+1. User opens:
+
+```text
+/reset-password?token=...
+```
+
+2. User enters a new password.
+3. Frontend sends:
+
+```text
+POST /api/auth/reset-password
+```
+
+4. Backend checks that the token exists and is not expired.
+5. Backend hashes the new password and saves it.
+6. Backend clears the reset token.
+
+---
+
+## Profile System
+
+Each user has a public profile.
+
+A profile can show:
+
+- Name
+- City
+- Bio
+- Phone number
+- Contact email
+- LinkedIn link
+- Social media link
+- Profile picture
+- Join month/year
+- Skills they teach
+- Skills they want to learn
+- Availability grid
+- Teaching rating
+- Learning rating
+- Sessions taught
+- Sessions learned
+
+### Editing your own profile
+
+A user can edit:
+
+- Name
+- City
+- Phone number
+- Contact email
+- LinkedIn URL
+- Social media URL
+- Bio
+- Profile picture
+
+The profile update request goes to:
+
+```text
+PATCH /api/users/me
+```
+
+### Profile picture upload
+
+Profile images are uploaded directly to Firebase Storage.
+
+The flow is:
+
+1. User clicks the avatar on their own profile.
+2. Browser opens a file picker.
+3. Frontend checks the file is an image and under 5 MB.
+4. Frontend uploads it to Firebase Storage.
+5. Firebase returns a URL.
+6. Frontend sends that URL to the backend.
+7. Backend saves it in `profile_pic_url`.
+
+### Account deletion
+
+A user can delete their own account from the profile page.
+
+The flow is:
+
+1. User clicks “Delete Account”.
+2. User enters their password.
+3. Browser shows a confirmation prompt.
+4. Frontend sends:
+
+```text
+DELETE /api/users/me
+```
+
+5. Backend verifies the password.
+6. Backend deletes or disconnects related records in a safe order.
+7. User is logged out and sent back to the homepage.
+
+The backend deletes the user's sessions, reviews, skills, availability, and related disputes. It also nullifies certain references in transactions and custom skills so the database does not break from foreign-key references.
+
+---
+
+## Skills System
+
+Users can add skills in two directions:
+
+### OFFER
+
+Means:
+
+```text
+I can teach this skill.
+```
+
+For offers, the user chooses a level:
+
+```text
+BEGINNER
+INTERMEDIATE
+ADVANCED
+```
+
+### SEEK
+
+Means:
+
+```text
+I want to learn this skill.
+```
+
+### Adding a skill
+
+1. User opens `/skills`.
+2. User clicks “Add Skill”.
+3. User chooses a category.
+4. User types the skill name.
+5. User chooses whether they teach it or want to learn it.
+6. User optionally adds a description and comma-separated tags.
+7. Frontend sends:
+
+```text
+POST /api/skills/my
+```
+
+8. Backend checks if the skill already exists in that category.
+9. If the skill does not exist, backend creates it as a custom skill.
+10. Backend creates the user's skill listing.
+11. Tags are created if they do not already exist.
+
+### Browsing skills
+
+The Skills page has two tabs:
+
+- **My Skills** — what the current user teaches and wants to learn.
+- **Browse All** — the whole skill catalog.
+
+Browse All supports:
+
+- Search by skill name
+- Filter by category
+- Viewing tags attached to skills
+
+---
+
+## Matching System
+
+The Matches page helps users find people.
+
+It has three tabs:
+
+### All Users
+
+This is the default tab.
+
+It shows a searchable directory of verified non-admin users, excluding the current user.
+
+The search can match:
+
+- User name
+- Skill name
+- Category name
+- Tag name
+
+The search is delayed by about 400ms while typing so it does not spam the backend with requests on every single keypress.
+
+The backend endpoint is:
+
+```text
+GET /api/matches/all?q=searchText
+```
+
+### They Teach Me
+
+Shows people who teach at least one skill that the current user wants to learn.
+
+Backend endpoint:
+
+```text
+GET /api/matches/one-way
+```
+
+### Mutual
+
+Shows the strongest kind of exchange:
+
+- They teach something I want.
+- They want something I teach.
+
+Backend endpoint:
+
+```text
+GET /api/matches/mutual
+```
+
+### Category bubbles
+
+The Matches page also shows category bubbles.
+
+These are not normal dropdown filters. They are animated category buttons.
+
+A category bubble is active only if at least one shown user teaches a skill in that category. Empty categories are faded/disabled so the user understands that nobody currently teaches that category.
+
+### Category ranking
+
+When the user filters by category, matches are ranked by usefulness.
+
+The ranking logic gives points for:
+
+- Teaching something the current user wants to learn
+- Being in the same city
+- Wanting something the current user can teach
+
+So the app does not just show random users. It tries to put the more relevant users first.
+
+---
+
+## Availability and Booking
+
+### Teacher availability
+
+Teachers set availability from their profile page using a weekly grid.
+
+The grid has:
+
+- Days as columns
+- Hours as rows
+- Green slots for available
+- Red slots for booked
+- Empty slots for not available
+
+Each slot represents one hour.
+
+The valid hours are:
+
+```text
+6 AM → 1 AM
+```
+
+### Toggling availability
+
+If the profile owner clicks an empty slot, it becomes available.
+
+If the profile owner clicks an available slot, it is removed.
+
+The request goes to:
+
+```text
+POST /api/availability/toggle
+```
+
+### Booked slots cannot be removed
+
+If a slot has an active `PENDING` or `CONFIRMED` session, it appears as booked/red.
+
+The teacher cannot remove that slot until the session is cancelled, rejected, completed, or otherwise no longer active.
+
+### Booking a session
+
+A learner can visit another user's profile and click a green available slot.
+
+The booking modal asks for:
+
+- Which offered skill they want to learn
+- Date/time
+- Optional notes
+
+The booking request goes to:
+
+```text
+POST /api/sessions
+```
+
+The backend checks:
+
+1. The learner is not booking themselves.
+2. The session is at least 24 hours in the future.
+3. The teacher does not already have an active overlapping session.
+4. The learner does not already have an active overlapping session.
+5. The learner has enough credits.
+
+If everything is valid:
+
+1. A `PENDING` session is created.
+2. 1 credit is held from the learner using escrow.
+3. The teacher gets an email notification.
+
+---
+
+## Session Lifecycle
+
+A normal session looks like this:
+
+```text
+PENDING → CONFIRMED → COMPLETED
+```
+
+But sessions can also be cancelled, disputed, or refunded.
+
+Full flow:
+
+```text
+PENDING → CONFIRMED → COMPLETED
+PENDING → CANCELLED
+CONFIRMED → CANCELLED
+CONFIRMED → DISPUTED → REFUNDED
+CONFIRMED → DISPUTED → COMPLETED
+```
+
+### PENDING
+
+The learner booked a session.
+
+1 credit is held from the learner but not given to the teacher yet.
+
+The teacher must confirm or reject.
+
+### CONFIRMED
+
+The teacher accepted the session.
+
+Both users should attend at the scheduled time.
+
+A Google Calendar button appears on the session card.
+
+### COMPLETED
+
+After the session end time passes, a scheduled backend task releases the held credit to the teacher and marks the session as completed.
+
+After completion, both users can leave reviews.
+
+### CANCELLED
+
+A session can become cancelled if:
+
+- The teacher rejects it.
+- The teacher cancels it while it is still pending/confirmed.
+- The teacher does not confirm before the 24-hour deadline.
+
+When a session is cancelled, the learner gets the held credit back.
+
+### DISPUTED
+
+During the session window only, the learner can report a problem.
+
+The button says “Report”. It opens a dispute modal.
+
+The learner explains what happened, and the backend changes the session status to `DISPUTED`.
+
+### REFUNDED
+
+If the admin resolves the dispute in favor of the learner, the held credit is returned to the learner and the session becomes `REFUNDED`.
+
+### DISPUTE RELEASE / TEACHER PAID
+
+If the admin resolves the dispute in favor of the teacher, the credit is released to the teacher and the session becomes `COMPLETED`.
+
+---
+
+## Sessions Page
+
+The regular user Sessions page has three tabs:
+
+- **All**
+- **Teaching**
+- **Learning**
+
+Session cards show:
+
+- Status
+- Skill name
+- Teacher
+- Learner
+- Date/time
+- Duration
+- Notes
+- Action buttons depending on user role and session status
+
+Teacher actions:
+
+- Confirm a pending session
+- Reject/cancel a session
+
+Learner actions:
+
+- Report during a confirmed session window
+- Leave review after completion
+
+Shared actions:
+
+- Add confirmed session to Google Calendar
+
+### Cancelled history
+
+Cancelled sessions are separated into a collapsible “Cancelled History” section. This keeps the main session list cleaner while still allowing the user to view old cancelled sessions.
+
+### Overlap warning
+
+The frontend can detect active sessions that visually overlap in time and show a warning. This helps with old/legacy data or edge cases. The backend also prevents new overlapping active sessions for both the teacher and the learner.
+
+---
+
+## Reviews and Ratings
+
+After a session is completed, each side can review the other.
+
+### Learner reviewing teacher
+
+This creates a `TEACHING` review for the teacher.
+
+It includes:
+
+- 1 to 5 star rating
+- Optional comment
+- Teacher on time?
+- Content useful?
+- Would recommend?
+
+### Teacher reviewing learner
+
+This creates a `LEARNING` review for the learner.
+
+It includes:
+
+- 1 to 5 star rating
+- Optional comment
+- Boolean feedback fields shown with learner-focused labels in the UI
+
+### Review button behavior
+
+On a completed session:
+
+- If the current user has not reviewed yet, they see “Leave a Review”.
+- If they already reviewed, they see “Reviewed”.
+
+The backend endpoint that checks this is:
+
+```text
+GET /api/reviews/check/{sessionId}
+```
+
+### Profile review stats
+
+Profiles show two rating blocks:
+
+- **As a Teacher**
+- **As a Learner**
+
+Each block can show:
+
+- Average star rating
+- Number of reviews
+- Number of completed sessions
+
+If reviews exist, the block is clickable and opens the full reviews page.
+
+### Full reviews page
+
+The app has a dedicated reviews page:
+
+```text
+/user/:userId/reviews?tab=teaching
+/user/:userId/reviews?tab=learning
+```
+
+It shows:
+
+- Review summary cards
+- Separate teaching/learning tabs
+- Reviewer avatar/name
+- Skill name
+- Session date
+- Star rating
+- Feedback badges
+- Written comment, if provided
+
+---
+
+## Credit System and Escrow
+
+The credit system is based on transactions.
+
+The balance is calculated like this:
+
+```text
+Balance = credits received - credits spent
+```
+
+### Credits received
+
+Examples:
+
+- Signup bonus
+- Referral bonus
+- Admin adds credits after manual purchase
+- Teacher receives credit after completed session
+- Learner receives refund after cancellation/dispute refund
+
+### Credits spent
+
+Examples:
+
+- Learner books a session and 1 credit is held
+- User redeems credits for cashout
+
+### Why escrow exists
+
+Escrow means the platform holds the credit temporarily.
+
+When a learner books a session:
+
+1. The learner loses access to 1 credit immediately.
+2. The teacher does not receive it yet.
+3. If the session happens successfully, the teacher gets it.
+4. If the session is cancelled/refunded, the learner gets it back.
+
+This prevents both sides from abusing the system.
+
+---
+
+## Wallet System
+
+The Wallet page has two tabs:
+
+- **Buy**
+- **Redeem**
+
+### Buying credits
+
+1. User chooses a package.
+2. User clicks the WhatsApp button.
+3. WhatsApp opens with a pre-filled message.
+4. User coordinates payment manually.
+5. Admin receives/validates payment.
+6. Admin opens Admin → Credits.
+7. Admin adds credits to the user's email.
+8. The balance updates through a `PURCHASE` transaction.
+
+### Redeeming credits
+
+1. User opens the Redeem tab.
+2. User needs at least 5 credits.
+3. User clicks the WhatsApp redeem button.
+4. Admin validates the request.
+5. Admin sends the payout manually.
+6. Admin opens Admin → Credits.
+7. Admin deducts 5 credits.
+8. The balance updates through a `REDEMPTION` transaction.
+
+---
+
+## Referral System
+
+Each user has a unique referral code.
+
+Example:
+
+```text
+ALI-A3F2C8
+```
+
+The dashboard shows the referral code and a “Copy Link” button.
+
+The copied link looks like:
+
+```text
+https://skillbank-489a8.web.app/register?ref=ALI-A3F2C8
+```
+
+When someone registers using the referral code:
+
+- The new user gets 1 bonus credit.
+- The referrer gets 1 bonus credit.
+- The referrer receives an email notification.
+
+The app also backfills referral codes for old users who do not have one yet when the backend starts.
+
+---
+
+## Profile Completion Prompt
+
+The user dashboard shows a profile completion bar if the profile is incomplete.
+
+It checks 6 things:
+
+1. Name exists
+2. Bio exists
+3. City exists
+4. Phone number exists
+5. User has at least one skill listed
+6. User has availability slots set
+
+If something is missing, the dashboard shows clickable hints like:
+
+- Add a bio
+- Set your city
+- Add phone number
+- List your skills
+- Set your availability
+
+Once the profile is complete, the prompt disappears.
+
+---
+
+## Google Calendar Integration
+
+This is a simple link-based integration.
+
+There is no Google OAuth and no Google Calendar API key.
+
+When a session is confirmed, the session card shows:
+
+```text
+Add to Google Calendar
+```
+
+Clicking it opens Google Calendar in a new tab with:
+
+- Session title
+- Start time
+- End time
+- Skill name
+- Teacher name
+- Learner name
+- Notes, if any
+
+The user can then save the event in their own Google Calendar.
+
+---
+
+## Dispute System
+
+A dispute is a learner complaint about a session.
+
+The learner can file a dispute only when:
+
+- They are the learner of the session.
+- The session is `CONFIRMED`.
+- The current time is between session start and session end.
+- No open dispute already exists for that session.
+
+The frontend button appears during the session window.
+
+The flow:
+
+1. Learner clicks “Report”.
+2. Learner writes what happened.
+3. Frontend sends:
+
+```text
+POST /api/disputes
+```
+
+4. Backend creates a dispute report.
+5. Backend changes the session to `DISPUTED`.
+6. Admin sees it in Admin → Disputes.
+7. Admin chooses:
+   - Refund Learner
+   - Pay Teacher
+8. Admin can add notes.
+9. Backend resolves the dispute and moves credits accordingly.
+
+---
+
+## Automatic Background Tasks
+
+The backend has scheduling enabled.
+
+These tasks run every 60 seconds.
+
+### 1. Auto-cancel unconfirmed sessions
+
+Looks for `PENDING` sessions that are less than 24 hours away.
+
+If found:
+
+- Session becomes `CANCELLED`.
+- Learner gets refunded.
+- Both users are emailed.
+
+### 2. Auto-release completed sessions
+
+Looks for `CONFIRMED` sessions whose end time has passed and have no open dispute.
+
+If found:
+
+- Credit is released to the teacher.
+- Session becomes `COMPLETED`.
+
+### 3. Send session reminders
+
+Looks for confirmed sessions that start within the next 2 hours and have not been reminded yet.
+
+If found:
+
+- Teacher gets a reminder email.
+- Learner gets a reminder email.
+- `reminder_sent` becomes true so the reminder is not sent twice.
+
+---
+
+## Admin Panel
+
+Admins see a different navbar.
+
+Regular users see:
+
+```text
+Dashboard | Skills | Sessions | Matches | Wallet | My Profile
+```
+
+Admins see:
+
+```text
+Overview | Users | Sessions | Credits | Disputes
+```
+
+### Admin Overview
+
+URL:
+
+```text
+/dashboard
+```
+
+For admins, `/dashboard` loads the admin dashboard.
+
+It shows platform stats:
+
+- Total users
+- Total sessions
+- Total skills
+- Total user skill listings
+- Total transactions
+
+### Admin Users
+
+URL:
+
+```text
+/admin/users
+```
+
+Shows all users in a searchable table.
+
+The admin can search by:
+
+- Name
+- Email
+- City
+
+The table shows:
+
+- Profile picture/avatar
+- Name
+- Email
+- City
+- Role
+- Email verified status
+- Balance
+- Join date
+
+Clicking a user row/avatar opens that user's profile.
+
+### Admin Sessions
+
+URL:
+
+```text
+/admin/sessions
+```
+
+Shows all platform sessions.
+
+Includes:
+
+- Search by session ID, user name, email, or skill
+- Status filters
+- Teacher and learner names/emails
+- Clickable teacher/learner links
+- Scheduled date/time
+- Created date
+
+### Admin Credits
+
+URL:
+
+```text
+/admin/credits
+```
+
+Used for manual credit operations.
+
+Admin can:
+
+- Add credits after user pays manually
+- Deduct credits after user redeems manually
+
+The backend checks that deductions cannot make a user balance go below zero.
+
+### Admin Disputes
+
+URL:
+
+```text
+/admin/disputes
+```
+
+Shows open disputes.
+
+Admin can:
+
+- Read the learner's complaint
+- Add admin notes
+- Refund learner
+- Pay teacher
+
+---
+
+## Public Pages
 
 | Page | URL | What It Does |
-|------|-----|-------------|
-| Homepage | `/` | Landing page that explains what SkillBank is, how credits work, shows a real example scenario (Sara and Karim exchanging French and Guitar), a detailed step-by-step walkthrough, an animated visual flow, a "Why SkillBank?" section, a FAQ with 5 expandable questions, and a sign-up call-to-action. Features rotating skill words in the hero section |
-| Login | `/login` | Enter email and password to sign in. Shows "Forgot password?" link. Handles unverified emails with a "Resend verification" option |
-| Register | `/register` | Create a new account with optional referral code. Supports referral links via `?ref=CODE` URL parameter. After submitting, shows "Check your email" with a verification message instead of logging in |
-| Forgot Password | `/forgot-password` | Enter email to receive a password reset link |
-| Reset Password | `/reset-password?token=...` | Set a new password (accessed only through the email link) |
-| Verify Email | `/verify?token=...` | Confirms email verification (accessed only through the email link) |
+|---|---|---|
+| Homepage | `/` | Explains SkillBank, credits, journey flow, example exchange, FAQ, and call-to-action |
+| Login | `/login` | Signs user in and handles unverified email resend |
+| Register | `/register` | Creates account, supports referral code and `?ref=CODE` links |
+| Forgot Password | `/forgot-password` | Sends reset link |
+| Reset Password | `/reset-password?token=...` | Lets user set a new password |
+| Verify Email | `/verify?token=...` | Verifies email address |
+| AI Chat Demo | `/ai-chat` | A public v0-style UI mockup/demo page. It is a visual component, not a real connected AI assistant backend |
 
-### Protected Pages — Regular Users
+---
 
-| Page | URL | What It Does |
-|------|-----|-------------|
-| Dashboard | `/dashboard` | Home page after login. Shows credit balance, profile completion progress bar with clickable hints (if profile is incomplete), pending/upcoming sessions count, promo banners for buying/redeeming credits, referral code with a "Copy Link" button, quick action links, and recent sessions table |
-| Skills | `/skills` | View and manage your skills. Two tabs: "My Skills" shows what you teach and want to learn with remove buttons. "Browse All" shows every skill in the catalog with search by name and filter by category |
-| Sessions | `/sessions` | View all your sessions. Three tabs: All, Teaching (sessions where you're the teacher), Learning (sessions where you're the learner). Each session card shows status, skill, people involved, date, and action buttons (Confirm/Reject for teachers, Report No-Show for learners, Leave a Review for completed sessions, Add to Google Calendar for confirmed sessions) |
-| Matches | `/matches` | Find people to exchange skills with. Three tabs: All Users (default — searchable directory of all verified users with their teachable/learnable skills), They Teach Me (people who can teach you), Mutual (people where both sides benefit) |
-| Wallet | `/wallet` | Buy and redeem credits. Two tabs: Buy ($15 for 1 credit or $60 for 5 credits via WhatsApp) and Redeem ($50 for 5 credits via WhatsApp). Shows step-by-step instructions for each process |
-| My Profile | `/profile` | View and edit your profile. Upload a profile picture by clicking the avatar. View your teaching and learning ratings with star averages, review counts, and session counts. Set your availability grid. Edit your name, bio, city, and phone number |
-| Other User's Profile | `/user/:userId` | View another user's profile, their teaching/learning ratings, and their availability. Click available (green) slots to book a session |
-
-### Protected Pages — Admin Only
+## Protected User Pages
 
 | Page | URL | What It Does |
-|------|-----|-------------|
-| Overview | `/dashboard` | Platform statistics: total users, sessions, skills, skill listings, and transactions. Quick-link cards to each admin section |
-| Users | `/admin/users` | Searchable table of all registered users showing name, email, city, role, verification status, balance, and join date |
-| Sessions | `/admin/sessions` | All sessions on the platform with status filters (All, Pending, Confirmed, Completed, Cancelled, Disputed) showing full details |
-| Credits | `/admin/credits` | Add or deduct credits for user purchases and redemptions with quick pricing reference |
-| Disputes | `/admin/disputes` | Review and resolve open session disputes — refund learner or pay teacher |
+|---|---|---|
+| Dashboard | `/dashboard` | User home page with balance, completion prompt, stats, referral code, promos, quick actions, and recent sessions |
+| Skills | `/skills` | Add/remove skills and browse/search/filter the skill catalog |
+| Sessions | `/sessions` | View sessions as all/teaching/learning, confirm/reject/report/review, view cancelled history |
+| Matches | `/matches` | Search all users, see one-way matches, see mutual matches, filter by animated category bubbles |
+| Wallet | `/wallet` | Buy/redeem credits manually through WhatsApp flow |
+| My Profile | `/profile` | Edit profile, upload image, set availability, delete account, see skills/reviews/stats |
+| Other Profile | `/user/:userId` | View another user, see their skills and availability, book sessions |
+| User Reviews | `/user/:userId/reviews` | View teaching/learning review history for a user |
 
-### Shared Components
+---
+
+## Admin Pages
+
+| Page | URL | What It Does |
+|---|---|---|
+| Overview | `/dashboard` | Admin dashboard stats and quick links |
+| Users | `/admin/users` | Searchable user table |
+| Sessions | `/admin/sessions` | Search/filter all sessions |
+| Credits | `/admin/credits` | Add/deduct user credits |
+| Disputes | `/admin/disputes` | Resolve open disputes |
+
+---
+
+## Important Frontend Components
 
 | Component | What It Does |
-|-----------|-------------|
-| Navbar | The top navigation bar. Shows completely different links depending on whether the user is a regular user or admin. Displays the user's name (with "(Admin)" label for admins) and a Logout button |
-| ProtectedRoute | Wraps protected pages. If the user isn't logged in (no token in localStorage), it redirects them to the login page |
-| AvailabilityGrid | The weekly availability calendar. Shows a grid of days × hours. Green = available, Red = booked, Empty = not set. Owners can click to add/remove slots (but can't remove booked slots). Visitors can click available slots to book. Includes a color legend |
-| SessionCard | Displays a single session with all its details and action buttons based on status and the user's role. Includes a "Leave a Review" button for completed sessions and an "Add to Google Calendar" link for confirmed sessions |
-| ReviewModal | A popup form for leaving a review after a completed session. Shows a 5-star rating selector, yes/no feedback questions (teacher on time? content useful? would recommend?), and an optional comment field |
-| ProfileStats | Displays a user's teaching and learning ratings side by side, with star averages, review counts, and total session counts. Only appears on profiles that have at least one completed session or review |
-| AuthContext | Manages the logged-in user's state across the entire app. Provides `login`, `register`, and `logout` functions that all pages can use |
+|---|---|
+| `Navbar.jsx` | Shows different navigation links for users vs admins and wraps page transitions |
+| `ProtectedRoute.jsx` | Prevents unauthenticated users from entering protected pages |
+| `AvailabilityGrid.jsx` | Weekly availability grid with available/booked/empty states |
+| `SessionCard.jsx` | Shows one session and the correct buttons for that user's role/status |
+| `ReviewModal.jsx` | Popup form for leaving reviews |
+| `DisputeModal.jsx` | Popup form for filing a session report/dispute |
+| `ProfileStats.jsx` | Shows teaching/learning rating blocks and links to review pages |
+| `Background3D.jsx` | Animated background shapes using React Three Fiber |
+| `HeroOrb.jsx` | Animated 3D orb visual |
+| `Marquee.jsx` | Animated scrolling skill list |
+| `AuthContext.jsx` | Stores logged-in user state and login/logout helpers |
+| `api/client.js` | Axios client with base URL and JWT interceptor |
 
 ---
 
-## Backend Architecture Explained
-
-### How the Backend is Organized
-
-The backend is organized into "packages" (folders), where each package handles one area of the app:
+## Backend Package Structure
 
 | Package | What It Handles |
-|---------|----------------|
-| `auth` | Registration (with referral support), login, email verification, password reset |
-| `user` | User profiles, editing profile info, review stats |
-| `skill` | Skills, categories, tags, adding/removing user skills, browsing the skill catalog |
+|---|---|
+| `admin` | Admin stats, users, sessions, credit operations |
+| `auth` | Register, login, verification, password reset, resend verification |
+| `availability` | Weekly teacher availability slots |
+| `config` | Security, JWT, CORS, seed data |
+| `dispute` | Filing and resolving disputes |
+| `email` | Brevo email sending |
+| `exception` | Global API error responses |
+| `match` | All users search, one-way matches, mutual matches |
+| `review` | Review creation, review stats, review listing |
+| `scheduler` | Auto-cancel, auto-release, reminders |
 | `session` | Booking, confirming, cancelling, viewing sessions |
-| `availability` | Teacher availability slots (the weekly grid) |
-| `transaction` | Credit balance calculations, escrow holds/releases/refunds, redemptions |
-| `match` | Finding compatible users to exchange skills with, searching all users |
-| `review` | Submitting and retrieving reviews/ratings after completed sessions |
-| `dispute` | Filing and resolving session disputes |
-| `email` | Sending all email notifications (verification, password reset, booking, reminders, referrals, cancellations) |
-| `scheduler` | Background tasks (auto-cancel, auto-release, session reminders) |
-| `admin` | Admin-only endpoints: platform stats, user listing, session listing, credit management |
-| `config` | Security settings, JWT handling, CORS rules, database seeding |
-| `exception` | Error handling (converting errors into readable messages) |
-
-### How a Request Flows Through the Backend
-
-Here's what happens when a request comes in, using "book a session" as an example:
-
-```
-1. Request arrives: POST /api/sessions with JWT token in header
-                    ↓
-2. CorsFilter checks: Is this request from an allowed website?
-   (localhost:5173, skill-bank-phi.vercel.app, or skillbank-489a8.web.app)
-                    ↓
-3. JwtAuthFilter extracts the JWT token, verifies the signature,
-   finds the user in the database, and sets them as the "current user"
-                    ↓
-4. SecurityConfig checks: Is /api/sessions a protected endpoint?
-   Yes → is the user authenticated? Yes → allow.
-                    ↓
-5. SessionController.book() receives the request and passes it
-   to SessionService.book()
-                    ↓
-6. SessionService.book() runs the business logic:
-   - Validates the request (not booking yourself, 24h advance, etc.)
-   - Checks for time slot conflicts
-   - Creates the session in the database
-   - Calls EscrowService to hold credits
-   - Calls EmailService to notify the teacher
-                    ↓
-7. Response sent back to the frontend with the created session details
-```
-
-### Security Configuration
-
-**SecurityConfig.java** defines which endpoints are public and which require login:
-
-- `/api/auth/**` — Public (anyone can register, login, verify email, reset password)
-- `/api/admin/**` — Requires ADMIN role
-- Everything else — Requires authentication (valid JWT token)
-
-**CorsConfig.java** defines which websites can make requests to the backend:
-
-- `http://localhost:5173` — For local development
-- `https://skill-bank-phi.vercel.app` — The Vercel deployment (backup)
-- `https://skillbank-489a8.web.app` — The Firebase deployment (primary)
-
-Any request from a different website is rejected. This prevents random websites from making requests to your backend.
+| `skill` | Skills, categories, tags, user skills |
+| `transaction` | Credits, balances, escrow, purchases, redemptions |
+| `user` | Profiles, referral codes, account deletion |
 
 ---
 
-## Configuration and Environment Variables
+## Request Flow Example — Booking a Session
 
-The backend uses environment variables so sensitive information (passwords, secret keys) is not stored in the code. On Render, these are set in the dashboard:
+This is what happens internally when a learner books a teacher:
 
-| Variable | What It's For |
-|----------|--------------|
-| SPRING_DATASOURCE_URL | The connection URL to the Neon PostgreSQL database |
-| SPRING_DATASOURCE_USERNAME | Database username |
-| SPRING_DATASOURCE_PASSWORD | Database password |
-| JWT_SECRET | The secret key used to sign JWT tokens. If someone gets this, they could forge tokens and impersonate any user |
-| SPRING_MAIL_USERNAME | The Gmail address used to send emails |
-| SPRING_MAIL_PASSWORD | The Gmail app password (a 16-character password generated in Google account settings, not the regular Gmail password) |
-| APP_URL | The frontend URL (`https://skillbank-489a8.web.app`). Used in email links so verification and reset links point to the right place |
+```text
+1. Frontend sends POST /api/sessions with JWT token
+        |
+        v
+2. CORS filter checks if the frontend origin is allowed
+        |
+        v
+3. JWT filter reads Authorization header and identifies current user
+        |
+        v
+4. Spring Security allows the request because the user is authenticated
+        |
+        v
+5. SessionController receives the request
+        |
+        v
+6. SessionService validates the booking rules
+        |
+        v
+7. EscrowService holds the learner's credit
+        |
+        v
+8. SessionRepository saves the session
+        |
+        v
+9. EmailService notifies the teacher
+        |
+        v
+10. Backend returns the created session to the frontend
+```
 
-When running locally, default values are used instead (defined in `application.properties` after the colon, like `${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/skillbank}`).
+---
+
+## Security Configuration
+
+Public endpoints:
+
+```text
+/api/auth/**
+```
+
+Admin-only endpoints:
+
+```text
+/api/admin/**
+```
+
+Everything else requires a valid JWT token.
+
+CORS allows these frontend origins:
+
+```text
+http://localhost:5173
+https://skill-bank-phi.vercel.app
+https://skillbank-489a8.web.app
+```
+
+This means random websites cannot freely call the backend from a browser.
+
+---
+
+## API Endpoints Overview
+
+### Auth
+
+```text
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/verify?token=...
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+POST /api/auth/resend-verification
+```
+
+### Users
+
+```text
+GET    /api/users/me
+GET    /api/users/{id}
+PATCH  /api/users/me
+DELETE /api/users/me
+POST   /api/users/me/purchase
+```
+
+### Skills
+
+```text
+GET    /api/skills/categories
+GET    /api/skills/all
+GET    /api/skills/category/{categoryId}
+GET    /api/skills/search?q=...
+GET    /api/skills/my
+GET    /api/skills/user/{userId}
+POST   /api/skills/my
+DELETE /api/skills/my/{userSkillId}
+```
+
+### Availability
+
+```text
+GET  /api/availability/{userId}
+POST /api/availability/toggle
+```
+
+### Sessions
+
+```text
+POST /api/sessions
+POST /api/sessions/{id}/confirm
+POST /api/sessions/{id}/cancel
+GET  /api/sessions
+GET  /api/sessions/teaching
+GET  /api/sessions/learning
+GET  /api/sessions/{id}
+```
+
+### Matches
+
+```text
+GET /api/matches/all
+GET /api/matches/all?q=...
+GET /api/matches/one-way
+GET /api/matches/mutual
+GET /api/matches/seeking-me
+```
+
+Note: `/api/matches/seeking-me` exists in the backend for users who want to find people seeking their skills, but the current main Matches UI exposes All Users, They Teach Me, and Mutual.
+
+### Reviews
+
+```text
+POST /api/reviews
+GET  /api/reviews/user/{userId}
+GET  /api/reviews/user/{userId}/teaching
+GET  /api/reviews/user/{userId}/learning
+GET  /api/reviews/stats/{userId}
+GET  /api/reviews/check/{sessionId}
+```
+
+### Disputes
+
+```text
+POST /api/disputes
+GET  /api/disputes/session/{sessionId}
+GET  /api/disputes/open
+POST /api/disputes/resolve
+```
+
+### Transactions
+
+```text
+GET /api/transactions/my
+GET /api/transactions/balance
+```
+
+### Admin
+
+```text
+GET  /api/admin/stats
+GET  /api/admin/users
+GET  /api/admin/sessions
+POST /api/admin/credits/add
+POST /api/admin/credits/deduct
+```
+
+---
+
+## Environment Variables
+
+The backend reads configuration from environment variables.
+
+In production, these are set in the hosting dashboard, for example Render.
+
+| Variable | Purpose |
+|---|---|
+| `SPRING_DATASOURCE_URL` | PostgreSQL database connection URL |
+| `SPRING_DATASOURCE_USERNAME` | PostgreSQL username |
+| `SPRING_DATASOURCE_PASSWORD` | PostgreSQL password |
+| `JWT_SECRET` | Secret used to sign JWT tokens |
+| `APP_URL` | Frontend URL used inside verification/reset links |
+| `BREVO_API_KEY` | Brevo API key used to send email |
+| `BREVO_FROM_EMAIL` | Sender email address for outgoing emails |
+| `BREVO_FROM_NAME` | Sender name, usually `SkillBank` |
+
+Local defaults are inside:
+
+```text
+src/main/resources/application.properties
+```
+
+Important: never commit real production secrets to GitHub. Environment variables should be set in Render/hosting settings, not hard-coded into source code.
 
 ---
 
 ## Deployment Architecture
 
-| Service | Provider | Plan | What It Hosts |
-|---------|----------|------|--------------|
-| Frontend | Firebase Hosting | Free (Spark) | The React website |
-| Backend | Render | Free tier | The Spring Boot API server |
-| Database | Neon | Free tier (0.5 GB) | PostgreSQL database |
-| File Storage | Firebase Storage | Pay-as-you-go (Blaze) | Profile pictures |
-| Analytics | Firebase Analytics | Free | User behavior tracking |
-| Email | Gmail SMTP | Free | All email notifications |
+| Part | Provider | What It Hosts |
+|---|---|---|
+| Frontend | Firebase Hosting | React website |
+| Backend | Render | Spring Boot API in Docker |
+| Database | Neon | PostgreSQL database |
+| File Storage | Firebase Storage | Profile pictures |
+| Analytics | Firebase Analytics | User behavior analytics |
+| Email | Brevo | Transactional emails |
 
-**Important notes about free tiers:**
+### Important free-tier behavior
 
-- Render's free tier "spins down" the backend after 15 minutes of no activity. The first request after it spins down takes about 30 seconds while it starts back up. After that, it's fast again.
-- Neon's free tier includes 0.5 GB of storage, which is plenty for thousands of users.
-- Firebase Storage on the Blaze plan has a generous free allowance (5 GB). You only pay if you exceed it.
+Render free-tier services may spin down after inactivity. That means the first backend request after a quiet period can be slow while the server wakes up.
 
 ---
 
 ## File Structure
 
-```
-skillbank/
-├── Dockerfile                          # Instructions for building the Docker container
-├── docker-compose.yml                  # Local development database setup
-├── pom.xml                             # Backend dependencies and build configuration
+```text
+SkillBank/
+├── Dockerfile
+├── docker-compose.yml
+├── pom.xml
+├── README.md
 │
-├── src/main/java/com/skillbank/        # Backend source code
-│   ├── SkillBankApplication.java       # The starting point — launches the entire backend
-│   ├── admin/                          # Admin endpoints: stats, user list, session list, credit management
-│   ├── auth/                           # Login, register (with referrals), verification, password reset
-│   ├── availability/                   # Teacher availability grid
-│   ├── config/                         # Security, JWT, CORS, database seeding
-│   ├── dispute/                        # Session dispute reporting and resolution
-│   ├── email/                          # All email sending logic (verification, booking, reminders, referrals)
-│   ├── exception/                      # Error handling
-│   ├── match/                          # Finding compatible users, searching all users
-│   ├── review/                         # Reviews and ratings after completed sessions
-│   ├── scheduler/                      # Background tasks (auto-cancel, auto-release, reminders)
-│   ├── session/                        # Session booking, confirming, cancelling
-│   ├── skill/                          # Skills, categories, tags
-│   ├── transaction/                    # Credit system and escrow
-│   └── user/                           # User profiles
+├── src/main/java/com/skillbank/
+│   ├── SkillBankApplication.java
+│   ├── admin/
+│   ├── auth/
+│   ├── availability/
+│   ├── config/
+│   ├── dispute/
+│   ├── email/
+│   ├── exception/
+│   ├── match/
+│   ├── review/
+│   ├── scheduler/
+│   ├── session/
+│   ├── skill/
+│   ├── transaction/
+│   └── user/
 │
 ├── src/main/resources/
-│   └── application.properties          # Configuration (database URL, email settings, etc.)
+│   └── application.properties
 │
-└── frontend/                           # Frontend source code
-    ├── index.html                      # The single HTML page that loads the React app
-    ├── firebase.json                   # Firebase Hosting configuration
-    ├── vercel.json                     # Vercel configuration (backup deployment)
-    ├── vite.config.js                  # Vite build tool configuration
-    ├── package.json                    # Frontend dependencies
-    │
-    ├── public/                         # Static files served as-is
-    │   ├── favicon.ico                 # Browser tab icon (small)
-    │   └── favicon_512.png             # Browser tab icon (large)
+└── frontend/
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── firebase.json
+    ├── vercel.json
+    ├── public/
+    │   ├── favicon.ico
+    │   └── favicon_512.png
     │
     └── src/
-        ├── main.jsx                    # Entry point — renders the React app
-        ├── App.jsx                     # Route definitions (which URL shows which page)
-        ├── index.css                   # All styling for the entire app
-        ├── firebase.js                 # Firebase configuration (Analytics + Storage)
-        │
+        ├── App.jsx
+        ├── main.jsx
+        ├── index.css
+        ├── firebase.js
         ├── api/
-        │   └── client.js              # Axios HTTP client (sends requests to the backend)
-        │
-        ├── context/
-        │   └── AuthContext.jsx         # Manages who is logged in
-        │
         ├── components/
-        │   ├── Navbar.jsx              # Top navigation bar (different for admin vs regular user)
-        │   ├── ProtectedRoute.jsx      # Redirects to login if not authenticated
-        │   ├── AvailabilityGrid.jsx    # Weekly availability calendar with booked slot indicators
-        │   ├── SessionCard.jsx         # Displays a session with review and calendar buttons
-        │   ├── ReviewModal.jsx         # Popup form for leaving reviews after sessions
-        │   └── ProfileStats.jsx        # Displays teaching/learning ratings on profiles
-        │
+        ├── context/
+        ├── lib/
         └── pages/
-            ├── HomePage.jsx            # Landing page with walkthrough, example, FAQ, and sign-up CTA
-            ├── Login.jsx               # Sign in page
-            ├── Register.jsx            # Create account page (with referral code support)
-            ├── ForgotPassword.jsx      # Request password reset
-            ├── ResetPassword.jsx       # Set new password
-            ├── VerifyEmail.jsx         # Email verification confirmation
-            ├── Dashboard.jsx           # Routes to UserDashboard or AdminDashboard based on role
-            ├── UserDashboard.jsx        # Regular user dashboard with completion bar and referrals
-            ├── AdminDashboard.jsx       # Admin overview with platform stats
-            ├── AdminUsers.jsx           # Admin: view all users
-            ├── AdminSessions.jsx        # Admin: view all sessions with filters
-            ├── AdminCredits.jsx         # Admin: add/deduct user credits
-            ├── AdminDisputes.jsx        # Admin: resolve session disputes
-            ├── Skills.jsx              # Manage and browse all skills
-            ├── Sessions.jsx            # View all sessions
-            ├── Matches.jsx             # Find skill exchange partners (with All Users search)
-            ├── Wallet.jsx              # Buy and redeem credits
-            └── Profile.jsx             # User profile with availability and ratings
 ```
 
 ---
 
 ## How to Run Locally
 
-1. **Start the database:** Run `docker-compose up` in the project root. This starts a local PostgreSQL database.
+### 1. Start PostgreSQL
 
-2. **Start the backend:** Open the project in an IDE (like IntelliJ) and run `SkillBankApplication.java`, or run `./mvnw spring-boot:run` in the terminal.
+From the project root:
 
-3. **Start the frontend:** Open a terminal in the `frontend/` folder and run:
-   ```
-   npm install    (first time only — installs dependencies)
-   npm run dev    (starts the development server)
-   ```
+```bash
+docker-compose up -d
+```
 
-4. **Open the app:** Visit `http://localhost:5173` in your browser.
+This starts a local PostgreSQL database with:
 
-The local setup uses the default values from `application.properties` — local PostgreSQL on port 5432, and the Vite proxy forwards `/api` requests to `localhost:8080`.
+```text
+Database: skillbank
+Username: skillbank
+Password: skillbank123
+Port: 5432
+```
+
+### 2. Start the backend
+
+From the project root:
+
+```bash
+mvn spring-boot:run
+```
+
+Or open the project in IntelliJ/Eclipse and run:
+
+```text
+SkillBankApplication.java
+```
+
+The backend runs on:
+
+```text
+http://localhost:8080
+```
+
+### 3. Start the frontend
+
+Open a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs on:
+
+```text
+http://localhost:5173
+```
+
+### 4. Open the app
+
+Visit:
+
+```text
+http://localhost:5173
+```
+
+In local development, Vite proxies `/api` requests to:
+
+```text
+http://localhost:8080
+```
+
+That proxy is configured in:
+
+```text
+frontend/vite.config.js
+```
+
+---
+
+## Production Build Commands
+
+### Backend Docker build
+
+The Dockerfile uses a two-stage build:
+
+1. Maven image builds the JAR.
+2. Eclipse Temurin JRE image runs the JAR.
+
+Build locally:
+
+```bash
+docker build -t skillbank-api .
+```
+
+Run locally:
+
+```bash
+docker run -p 8080:8080 skillbank-api
+```
+
+### Frontend build
+
+From `frontend/`:
+
+```bash
+npm run build
+```
+
+This creates the production frontend files in:
+
+```text
+frontend/dist/
+```
+
+---
+
+## Current Manual / Intentional Limitations
+
+These are not necessarily bugs. They are design decisions or current limitations.
+
+### Payments are manual
+
+There is no Stripe/PayPal-style automatic checkout. Buying and redeeming credits is coordinated manually through WhatsApp and local payment methods.
+
+### Google Calendar is link-based
+
+There is no Google OAuth integration. The app simply opens a pre-filled Google Calendar event link.
+
+### AI chat page is only a UI demo
+
+The `/ai-chat` page is a v0-style visual component. It is not connected to a real AI backend or SkillBank data.
+
+### Availability is weekly/recurring
+
+The availability grid stores day-of-week + hour, not one-time availability dates. When booking, the frontend suggests the next valid occurrence at least about 24 hours ahead.
+
+---
+
+## Simple Mental Model of the Whole App
+
+Think of SkillBank like a small bank, but instead of money, it tracks learning hours.
+
+- A user deposits value by teaching.
+- A user withdraws value by learning.
+- Credits are the accounting unit.
+- Escrow protects both sides.
+- Reviews build trust.
+- Admins handle the real-world parts that cannot be fully automated yet.
+
+That is why the name “SkillBank” fits the project: it is a bank for skills, time, and knowledge.
