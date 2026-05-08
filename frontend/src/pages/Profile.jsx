@@ -307,14 +307,14 @@ export default function Profile() {
                 <h1>{profile.name}</h1>
                 <div className="profile-info-grid">
                   {profileInfoItems.map(item => (
-                    <div key={item.label} className="profile-info-item">
+                    <div key={item.label} className={`profile-info-item profile-info-${item.label.toLowerCase().replace(/\s+/g, '-')}`}>
                       <span>{item.label}</span>
                       {item.href ? (
                         <a href={item.href} target={item.href.startsWith('mailto:') ? undefined : '_blank'} rel="noreferrer">
                           {item.value}
                         </a>
                       ) : (
-                        <strong>{item.value}</strong>
+                        <strong className="profile-info-value">{item.value}</strong>
                       )}
                     </div>
                   ))}
