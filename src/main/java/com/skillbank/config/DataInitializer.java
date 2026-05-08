@@ -2,11 +2,15 @@ package com.skillbank.config;
 
 import com.skillbank.skill.SkillCategory;
 import com.skillbank.skill.SkillCategoryRepository;
+import com.skillbank.user.ReferralCodeService;
+import com.skillbank.user.User;
+import com.skillbank.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +20,8 @@ import java.util.List;
 public class DataInitializer implements ApplicationRunner {
 
     private final SkillCategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final ReferralCodeService referralCodeService;
 
     private static final List<String> CATEGORIES = List.of(
         "Technology & Programming",
@@ -41,7 +47,10 @@ public class DataInitializer implements ApplicationRunner {
     );
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) {
+        backfillReferralCodes();
+
         long existing = categoryRepository.count();
         if (existing > 0) return;
 
@@ -50,5 +59,17 @@ public class DataInitializer implements ApplicationRunner {
         );
 
         log.info("Seeded {} skill categories", CATEGORIES.size());
+    }
+
+    private void backfillReferralCodes() {
+        List<User> usersWithoutReferralCodes = userRepository.findUsersMissingReferralCode();
+        usersWithoutReferralCodes.forEach(user ->
+                user.setReferralCode(referralCodeService.generateForName(user.getName()))
+        );
+
+        if (!usersWithoutReferralCodes.isEmpty()) {
+            userRepository.saveAll(usersWithoutReferralCodes);
+            log.info("Backfilled referral codes for {} users", usersWithoutReferralCodes.size());
+        }
     }
 }

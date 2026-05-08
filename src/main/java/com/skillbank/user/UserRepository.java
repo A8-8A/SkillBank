@@ -13,6 +13,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByVerificationToken(String verificationToken);
     Optional<User> findByResetToken(String resetToken);
     Optional<User> findByReferralCode(String referralCode);
+    Optional<User> findByReferralCodeIgnoreCase(String referralCode);
+
+    @Query("""
+        SELECT u FROM User u
+        WHERE u.referralCode IS NULL OR TRIM(u.referralCode) = ''
+        """)
+    List<User> findUsersMissingReferralCode();
 
     @Query("""
         SELECT DISTINCT u FROM User u

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { motion, AnimatePresence, useInView } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
 import { fadeUp, stagger, cardVariant } from '../lib/motionVariants'
@@ -9,11 +9,9 @@ const WHATSAPP_NUMBER = '96176860746'
 
 function useCountUp(target, duration = 1000) {
   const [value, setValue] = useState(0)
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true })
 
   useEffect(() => {
-    if (!inView || target == null) return
+    if (target == null) return
     let start = 0
     const step = target / (duration / 16)
     const timer = setInterval(() => {
@@ -22,23 +20,66 @@ function useCountUp(target, duration = 1000) {
       if (start >= target) clearInterval(timer)
     }, 16)
     return () => clearInterval(timer)
-  }, [inView, target, duration])
+  }, [target, duration])
 
-  return { value, ref }
+  return value
+}
+
+function parseBalance(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
 }
 
 export default function Wallet() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const [tab, setTab] = useState(searchParams.get('tab') || 'buy')
-  const [profile, setProfile] = useState(null)
+  const [balance, setBalance] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    client.get('/users/me').then(r => setProfile(r.data)).finally(() => setLoading(false))
+    let active = true
+
+    const loadWallet = async () => {
+      try {
+        const { data } = await client.get('/users/me')
+
+        if (!active) return
+        setBalance(parseBalance(data.balance))
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    const refreshBalance = async () => {
+      try {
+        const { data } = await client.get('/users/me')
+        if (active) setBalance(parseBalance(data.balance))
+      } catch (err) {
+        console.error('Wallet balance refresh failed:', err)
+      }
+    }
+
+    loadWallet()
+
+    const handleFocus = () => refreshBalance()
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshBalance()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    const balanceRefreshInterval = setInterval(refreshBalance, 30000)
+
+    return () => {
+      active = false
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearInterval(balanceRefreshInterval)
+    }
   }, [])
 
-  const { value: displayBalance, ref: balanceRef } = useCountUp(profile?.balance ?? 0)
+  const displayBalance = useCountUp(balance)
 
   const openWhatsApp = (message) => {
     const encoded = encodeURIComponent(message)
@@ -56,7 +97,7 @@ export default function Wallet() {
   }
 
   const handleRedeem = () => {
-    if ((profile?.balance ?? 0) < 5) {
+    if (balance < 5) {
       alert('You need at least 5 credits to redeem.')
       return
     }
@@ -64,7 +105,7 @@ export default function Wallet() {
       `Hi! I'd like to redeem 5 SkillBank credits for $50.\n\n` +
       `Account: ${user?.email}\n` +
       `Name: ${user?.name}\n` +
-      `Current balance: ${profile?.balance} credits\n\n` +
+      `Current balance: ${balance} credits\n\n` +
       `Please let me know how you'll send the $50.`
     )
   }
@@ -88,7 +129,7 @@ export default function Wallet() {
       {/* Balance Header */}
       <motion.div className="wallet-balance-card" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
         <p className="wallet-balance-label">Your Balance</p>
-        <h1 className="wallet-balance-number" ref={balanceRef}>{displayBalance}</h1>
+        <h1 className="wallet-balance-number">{displayBalance}</h1>
         <p className="wallet-balance-sublabel">credits</p>
       </motion.div>
 
@@ -222,9 +263,9 @@ export default function Wallet() {
               </motion.div>
 
               <p className="wallet-redeem-balance">
-                Your current balance: <strong>{profile?.balance ?? 0} credits</strong>
-                {(profile?.balance ?? 0) >= 5
-                  ? ` — you can redeem ${Math.floor(profile.balance / 5) * 5} credits for $${Math.floor(profile.balance / 5) * 50}`
+                Your current balance: <strong>{balance} credits</strong>
+                {balance >= 5
+                  ? ` — you can redeem ${Math.floor(balance / 5) * 5} credits for $${Math.floor(balance / 5) * 50}`
                   : ` — you need at least 5 credits to redeem`
                 }
               </p>
@@ -232,12 +273,12 @@ export default function Wallet() {
               <motion.button
                 className="btn btn-primary btn-full"
                 onClick={handleRedeem}
-                disabled={(profile?.balance ?? 0) < 5}
+                disabled={balance < 5}
                 style={{ marginTop: '1.5rem', maxWidth: '320px' }}
-                whileHover={(profile?.balance ?? 0) >= 5 ? { scale: 1.03 } : {}}
-                whileTap={(profile?.balance ?? 0) >= 5 ? { scale: 0.97 } : {}}
+                whileHover={balance >= 5 ? { scale: 1.03 } : {}}
+                whileTap={balance >= 5 ? { scale: 0.97 } : {}}
               >
-                {(profile?.balance ?? 0) < 5 ? 'Not enough credits' : 'Redeem via WhatsApp'}
+                {balance < 5 ? 'Not enough credits' : 'Redeem via WhatsApp'}
               </motion.button>
             </motion.div>
 
