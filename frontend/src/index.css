@@ -361,39 +361,45 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 .profile-info h1  { margin-bottom:0; font-size:1.6rem; color:var(--primary-dark); }
 .profile-meta     { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.82rem; color:var(--muted); }
 .profile-info-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:.75rem;
-  margin-top:.5rem;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.35rem .9rem;
+  margin-top:.35rem;
 }
 .profile-info-item {
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:1rem;
+  gap:.35rem;
   min-width:0;
-  min-height:52px;
-  padding:.7rem .85rem;
-  border:1px solid var(--border-light);
-  border-radius:var(--radius-sm);
-  background:var(--surface);
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.profile-info-item:not(:last-child)::after {
+  content:'';
+  width:1px;
+  height:14px;
+  margin-left:.55rem;
+  background:var(--border);
+  opacity:.7;
 }
 .profile-info-item span {
   flex:0 0 auto;
   color:var(--muted);
-  font-size:.68rem;
-  font-weight:800;
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:0;
+  text-transform:none;
 }
 .profile-info-item strong,
 .profile-info-item a {
   min-width:0;
   color:var(--text);
-  font-size:.86rem;
+  font-size:.82rem;
   font-weight:700;
   line-height:1.35;
-  text-align:right;
+  text-align:left;
   overflow-wrap:break-word;
   word-break:break-word;
 }
@@ -553,8 +559,8 @@ input::placeholder, textarea::placeholder { color: var(--muted); opacity:.6; }
 @media (max-width:600px) { .referral-inner { flex-direction:column; text-align:center; } .profile-stats-row { grid-template-columns:1fr; } }
 @media (max-width:520px) {
   .profile-body { padding:0 1rem 1.25rem; }
-  .profile-info-grid { grid-template-columns:1fr; }
-  .profile-info-item { align-items:flex-start; flex-direction:column; gap:.25rem; }
+  .profile-info-grid { gap:.3rem .65rem; }
+  .profile-info-item { gap:.3rem; }
   .profile-info-item strong,
   .profile-info-item a { text-align:left; }
 }
