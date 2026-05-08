@@ -140,7 +140,7 @@ export default function SessionCard({ session, onRefresh, onUpdate, onRemove, ha
         )}
         {isLearner && session.status === 'CONFIRMED' && duringSession && (
           <button className="btn btn-danger btn-sm" onClick={() => setShowDispute(true)}>
-            Report No-Show
+            Report
           </button>
         )}
         {session.status === 'COMPLETED' && !hasReviewed && (
