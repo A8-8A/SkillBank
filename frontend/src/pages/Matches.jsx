@@ -7,14 +7,25 @@ import { fadeUp, stagger, cardVariant } from '../lib/motionVariants'
 export default function Matches() {
   const [tab, setTab] = useState('all')
   const [matches, setMatches] = useState([])
-  const [allSkills, setAllSkills] = useState([])
+  const [categories, setCategories] = useState([])
+  const [skillCategoryMap, setSkillCategoryMap] = useState({})
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterSkill, setFilterSkill] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    client.get('/skills/all').then(r => setAllSkills(r.data)).catch(() => {})
+    client.get('/skills/all')
+      .then(r => {
+        const map = {}
+        r.data.forEach(s => { map[s.name] = s.category?.name })
+        setSkillCategoryMap(map)
+      })
+      .catch(() => {})
+
+    client.get('/skills/categories')
+      .then(r => setCategories(r.data))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -23,7 +34,7 @@ export default function Matches() {
 
   const loadMatches = () => {
     setLoading(true)
-    setFilterSkill('')
+    setFilterCategory('')
     const endpoint = tab === 'mutual'
       ? '/matches/mutual'
       : tab === 'one-way'
@@ -51,10 +62,13 @@ export default function Matches() {
     }
   }
 
-  const taughtSkills = new Set(matches.flatMap(m => m.skillsTheyOffer))
+  // Categories that have at least one teacher in current matches
+  const activeCategories = new Set(
+    matches.flatMap(m => m.skillsTheyOffer.map(s => skillCategoryMap[s]).filter(Boolean))
+  )
 
-  const filteredMatches = filterSkill
-    ? matches.filter(m => m.skillsTheyOffer.includes(filterSkill))
+  const filteredMatches = filterCategory
+    ? matches.filter(m => m.skillsTheyOffer.some(s => skillCategoryMap[s] === filterCategory))
     : matches
 
   return (
@@ -65,15 +79,9 @@ export default function Matches() {
       </motion.p>
 
       <motion.div className="tabs" {...fadeUp(0.12)}>
-        <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>
-          All Users
-        </button>
-        <button className={`tab ${tab === 'one-way' ? 'active' : ''}`} onClick={() => setTab('one-way')}>
-          They teach me
-        </button>
-        <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>
-          Mutual
-        </button>
+        <button className={`tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>All Users</button>
+        <button className={`tab ${tab === 'one-way' ? 'active' : ''}`} onClick={() => setTab('one-way')}>They teach me</button>
+        <button className={`tab ${tab === 'mutual' ? 'active' : ''}`} onClick={() => setTab('mutual')}>Mutual</button>
       </motion.div>
 
       <AnimatePresence>
@@ -97,43 +105,43 @@ export default function Matches() {
         )}
       </AnimatePresence>
 
-      {allSkills.length > 0 && (
-        <motion.div className="skill-bubbles-wrapper" {...fadeUp(0.18)}>
-          <p className="skill-bubbles-label">Filter by skill</p>
-          <div className="skill-bubbles">
-            {allSkills.map((skill, i) => {
-              const available = taughtSkills.has(skill.name)
-              const active = filterSkill === skill.name
+      {categories.length > 0 && (
+        <motion.div className="category-bubbles-section" {...fadeUp(0.18)}>
+          <span className="category-bubbles-label">Filter by category</span>
+          <div className="category-bubbles">
+            {categories.map((cat, i) => {
+              const available = activeCategories.has(cat.name)
+              const active = filterCategory === cat.name
               return (
                 <motion.button
-                  key={skill.id}
-                  className={`skill-bubble${active ? ' skill-bubble-active' : ''}${!available ? ' skill-bubble-empty' : ''}`}
-                  onClick={() => available && setFilterSkill(active ? '' : skill.name)}
-                  initial={{ opacity: 0, scale: 0.6, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ delay: i * 0.025, type: 'spring', stiffness: 280, damping: 18 }}
-                  whileHover={available ? { scale: 1.1, y: -3, boxShadow: '0 8px 24px rgba(45,106,79,0.22)' } : {}}
-                  whileTap={available ? { scale: 0.82, rotateX: 18, rotateY: -8 } : {}}
-                  style={{ transformPerspective: 500, transformStyle: 'preserve-3d' }}
+                  key={cat.id}
+                  className={`category-bubble${active ? ' category-bubble-active' : ''}${!available ? ' category-bubble-empty' : ''}`}
+                  onClick={() => available && setFilterCategory(active ? '' : cat.name)}
+                  initial={{ opacity: 0, scale: 0.75 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 20 }}
+                  whileHover={available ? { scale: 1.07, y: -2 } : {}}
+                  whileTap={available ? { scale: 0.84, rotateX: 16, rotateY: -8 } : {}}
+                  style={{ transformPerspective: 500 }}
                 >
-                  {skill.name}
-                  {!available && <span className="bubble-empty-label"> · no one</span>}
+                  {cat.name}
+                  {!available && <span className="bubble-none-label"> · no one</span>}
                 </motion.button>
               )
             })}
           </div>
           <AnimatePresence>
-            {filterSkill && (
+            {filterCategory && (
               <motion.button
                 className="btn btn-sm"
-                style={{ marginTop: '0.75rem' }}
-                onClick={() => setFilterSkill('')}
-                initial={{ opacity: 0, y: -6 }}
+                style={{ alignSelf: 'flex-start', marginTop: '.5rem' }}
+                onClick={() => setFilterCategory('')}
+                initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.18 }}
               >
-                Clear filter · {filterSkill}
+                Clear · {filterCategory}
               </motion.button>
             )}
           </AnimatePresence>
@@ -153,7 +161,7 @@ export default function Matches() {
             transition={{ duration: 0.4 }}
           >
             <p>{
-              filterSkill      ? `No one teaches "${filterSkill}" yet.` :
+              filterCategory   ? `No one teaches a "${filterCategory}" skill yet.` :
               tab === 'all'    ? (searchQuery ? `No users found matching "${searchQuery}".` : 'No other users found.') :
               tab === 'one-way'? 'No one found teaching what you want to learn yet.' :
                                  'No mutual matches yet. Add more skills you offer and seek.'
@@ -161,7 +169,7 @@ export default function Matches() {
           </motion.div>
         ) : (
           <motion.div
-            key={tab + searchQuery + filterSkill}
+            key={tab + searchQuery + filterCategory}
             className="matches-grid"
             variants={stagger}
             initial="hidden"
@@ -176,10 +184,7 @@ export default function Matches() {
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
                 <div className="match-header">
-                  <div
-                    className="match-user-link"
-                    onClick={() => navigate(`/user/${m.userId}`)}
-                  >
+                  <div className="match-user-link" onClick={() => navigate(`/user/${m.userId}`)}>
                     <div
                       className="match-avatar"
                       style={{
