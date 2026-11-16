@@ -11,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +34,23 @@ public class MatchService {
 
     @Transactional(readOnly = true)
     public List<MatchDTO> getOneWayMatches(User currentUser) {
-        List<UserSkill> offers = userSkillRepo.findOffersMatchingMySeeks(currentUser.getId());
-        return offers.stream()
-                .map(us -> us.getUser())
-                .filter(u -> u.isEmailVerified() && u.getRole() != Role.ADMIN)
-                .distinct()
-                .map(this::buildMatchDTO)
+        Map<Long, List<UserSkill>> matchingOffersByTeacher = userSkillRepo
+                .findOffersMatchingMySeeks(currentUser.getId()).stream()
+                .filter(offer -> offer.getUser().isEmailVerified() && offer.getUser().getRole() != Role.ADMIN)
+                .collect(Collectors.groupingBy(offer -> offer.getUser().getId()));
+
+        return matchingOffersByTeacher.values().stream()
+                .map(offers -> {
+                    long matchedSkillCount = offers.stream()
+                            .map(offer -> offer.getSkill().getId())
+                            .distinct()
+                            .count();
+                    return new RankedTeacher(offers.get(0).getUser(), matchedSkillCount);
+                })
+                .sorted(Comparator.comparingLong(RankedTeacher::matchedSkillCount)
+                        .reversed()
+                        .thenComparingLong(match -> match.teacher().getId()))
+                .map(match -> buildMatchDTO(match.teacher()))
                 .toList();
     }
 
@@ -83,4 +97,6 @@ public class MatchService {
         return new MatchDTO(user.getId(), user.getName(), user.getCity(), user.getBio(),
                 user.getProfilePicUrl(), offers, seeks);
     }
+
+    private record RankedTeacher(User teacher, long matchedSkillCount) {}
 }
